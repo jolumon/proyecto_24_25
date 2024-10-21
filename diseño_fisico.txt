@@ -1,0 +1,43 @@
+tipos(id_tipos, nombre_tipos)
+    pK: id_tipos
+
+ubicaciones(id_ubicaciones, nombre_ubicaciones)
+    pK: id_ubicaciones 
+
+salas(id_salas, nombre_salas)
+    pK: id_salas
+
+equipos(id_equipos,nombre_equipos)
+    pk: id_equipos
+
+clientes(id_clientes, nombre_clientes, direccion_clientes, codigo_postal_clientes, poblacion_clientes, provincia_clientes, email_clientes, telefono_clientes)
+    pK: id_clientes
+
+materias_primas(id_mps, nombre_mps,cantidad_mps)
+    pk:id_mps
+
+proveedores(id_proveedores, nombre_proveedores, direccion_proveeedores, codigo_postal_proveedores, poblacion_proveedores, provincia_proveedores, email_proveedores, telefono_proveedores)
+    pK: id_proveedores
+
+rel_mps_proveedores(mp_id_rmp,proveedor_rmp)
+    pk:(mp_id_rmp,proveedor_rmp)
+    fk1: mp_id_rmp references materias_primas(id_mps)
+    fk2: proveedor_rmp references proveedores(id_proveedores)
+
+rel_cosm_mp(cosm_id_rcm, mp_id_rcm,porcentaje_rcm)
+    pk:(cosm_id_rcm, mp_id_rcm)
+    fk1: cosm_id_rcm references cosmeticos(id_cosmeticos)
+    fk2: mp_id_rcm references materias_primas(id_mps)
+
+ordenes(id_ordenes, lote_ordenes, cantidad_ordenes, fecha_cad_ordenes,fecha_fab_ordenes)
+    pK: id_ordenes
+
+cosmeticos(id_cosmeticos, nombre_cosmeticos,fecha_cad_cosmeticos, tipo_cosmeticos,cliente_cosmeticos)
+    pk: id_cosmeticos
+    fk1: tipo_cosmeticos references tipos(id_cosmeticos)
+    fk2: cliente_cosmeticos references clientes(id_clientes)
+
+entradas(id_entradas, fecha_entradas,materia_prima_entradas, proveedor_entradas, lote_entradas,fecha_cad_entradas,cantidad_entradas, ubicacion_entradas)
+    pk: id_entradas
+    fk1: materia_prima_entradas, proveedor_entradas references rel_mps_proveedores(mp_id_rmp,proveedor_rmp)
+    fk2: ubicacion_entradas references ubicaciones(id_ubicaciones)
