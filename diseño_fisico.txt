@@ -7,8 +7,10 @@ ubicaciones(id_ubicaciones, nombre_ubicaciones)
 salas(id_salas, nombre_salas)
     pK: id_salas
 
-equipos(id_equipos,nombre_equipos)
+equipos(id_equipos,nombre_equipos,sala_id)
     pk: id_equipos
+    fk: sala_id references salas(id_salas)
+    vnn: sala_id
 
 clientes(id_clientes, nombre_clientes, direccion_clientes, codigo_postal_clientes, poblacion_clientes, provincia_clientes, email_clientes, telefono_clientes)
     pK: id_clientes
@@ -37,7 +39,11 @@ cosmeticos(id_cosmeticos, nombre_cosmeticos,fecha_cad_cosmeticos, tipo_cosmetico
     fk1: tipo_cosmeticos references tipos(id_cosmeticos)
     fk2: cliente_cosmeticos references clientes(id_clientes)
 
-entradas(id_entradas, fecha_entradas,materia_prima_entradas, proveedor_entradas, lote_entradas,fecha_cad_entradas,cantidad_entradas, ubicacion_entradas)
+lotes(id_lotes,nombre_lotes,cantidad_lotes,mp_lotes,proveedor_lotes)
+    pk: id_lotes
+    fk1: mp_lotes,proveedor_lotes references rel_mps_proveedores(mp_id_rmp,proveedor_rmp)
+
+entradas(id_entradas, fecha_entradas,lote_entradas,fecha_cad_entradas,cantidad_entradas, ubicacion_entradas)
     pk: id_entradas
-    fk1: materia_prima_entradas, proveedor_entradas references rel_mps_proveedores(mp_id_rmp,proveedor_rmp)
+    fk1: lote_entradas references lotes(id_lotes)
     fk2: ubicacion_entradas references ubicaciones(id_ubicaciones)
