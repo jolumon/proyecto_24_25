@@ -221,8 +221,10 @@ CREATE table cosmeticos (
 		tipo_id_cosmeticos int not null,
 		cliente_id_cosmeticos int not null,
 		activo_cosmeticos bool default true,
-		CONSTRAINT pk_cosmeticos PRIMARY KEY (id_cosmeticos)
-		
+		CONSTRAINT pk_cosmeticos PRIMARY KEY (id_cosmeticos),
+		CONSTRAINT fk1_cosmeticos FOREIGN KEY (tipo_id_cosmeticos) REFERENCES tipos (id_tipos),
+		CONSTRAINT fk2_cosmeticos FOREIGN KEY (cliente_id_cosmeticos) REFERENCES clientes (id_clientes)
+	
 	);
 
 insert
@@ -297,28 +299,27 @@ INSERT into rel_cosm_mp VALUES
 CREATE table ubicaciones (
 		id_ubicaciones serial NOT NULL,
 		nombre_ubicaciones varchar(20),
-		lotes_id_ubicaciones int not null,
 		activo_ubicaciones bool default true,
 		CONSTRAINT pk_ubicaciones PRIMARY KEY (id_ubicaciones)
 	);
 
-INSERT into ubicaciones (nombre_ubicaciones,lotes_id_ubicaciones)
+INSERT into ubicaciones (nombre_ubicaciones)
 VALUES
-	('0101A01',1),
-	('0101A02',2),
-	('0101A03',3),
-	('0101B01',4),
-	('0101B02',5),
-	('0101B03',6),
-	('0101C01',7),
-	('0101C02',8),
-	('0101C03',9),
-	('0101D01',10),
-	('0101D02',11),
-	('0101D03',12),
-	('0102A01',13),
-	('0102A02',14),
-	('0102A03',15);
+	('0101A01'),
+	('0101A02'),
+	('0101A03'),
+	('0101B01'),
+	('0101B02'),
+	('0101B03'),
+	('0101C01'),
+	('0101C02'),
+	('0101C03'),
+	('0101D01'),
+	('0101D02'),
+	('0101D03'),
+	('0102A01'),
+	('0102A02'),
+	('0102A03');
 	/*
 	('0102B01'),
 	('0102B02'),
@@ -340,7 +341,10 @@ CREATE table entradas_lotes (
 		cantidad_el int,
 		nombre_lotes varchar(10),
 		cantidad_lotes_el decimal(10, 2),
-		ubicacion_id_el int
+		ubicacion_id_el int,
+		CONSTRAINT pk_el PRIMARY KEY (id_ent_el),
+		CONSTRAINT fk1_el FOREIGN KEY (mp_id_el,proveedor_id_el) REFERENCES rel_mps_proveedores(mp_id_rmp,proveedor_id_rmp),
+		CONSTRAINT fk2_el FOREIGN KEY (ubicacion_id_el) REFERENCES ubicaciones (id_ubicaciones)
 	);
 
 INSERT into entradas_lotes (
@@ -352,6 +356,7 @@ INSERT into entradas_lotes (
 		cantidad_el,
 		cantidad_lotes_el,
 		ubicacion_id_el
+		
 	)
 VALUES
 	(1, 10, '2028-11-26', '2028-11-26', 'MF0001', 1000000,1000000,1),
@@ -399,76 +404,3 @@ VALUES
 	(1, '2024-10-25', 'MF0015',50,'2027-12-24', 3),
 	(1, '2024-11-26', 'MF0016',250, '2027-12-25', 4);
 
-
-
-/*
-CREATE TABLE
-lotes (
-id_lotes int not null,
-nombre_lotes varchar(6),
-cantidad_lotes decimal(10, 2) not null default 100000,
-entrada_id_lotes int not null,
-ubicacion_id_lotes int not null,
-CONSTRAINT pk_lotes PRIMARY KEY (id_lotes),
-CONSTRAINT fk1_lotes FOREIGN KEY (entrada_id_lotes) REFERENCES entradas (id_entradas),
-CONSTRAINT fk2_lotes FOREIGN KEY (ubicacion_id_lotes) REFERENCES ubicaciones (id_ubicaciones)
-);
-
-INSERT INTO
-lotes (nombre_lotes, entrada_id_lotes)
-values
-('MF0001', 2, 100),
-('MF0002', 2, 100),
-('MF0003', 2, 100),
-('MF0004', 2, 100),
-('MF0005', 2, 100),
-('MF0006', 2, 100),
-('MF0007', 2, 100),
-('MF0008', 2, 100),
-('MF0009', 2, 100),
-('MF0010', 2, 100),
-('MF0011', 2, 100),
-('MF0012', 2, 100),
-('MF0013', 2, 100),
-('MF0014', 2, 100),
-('MF0015', 2, 100),
-('MF0016', 2, 100),
-('MF0017', 2, 100),
-('MF0018', 2, 100),;
-
-CREATE TABLE
-entradas (
-id_entradas serial not null,
-mp_id_lotes int not null,
-proveedor_id_lotes int not null,
-fecha_entradas date,
-lote_id_entradas int not null,
-fecha_cad_entradas date,
-cantidad_entradas int,
-CONSTRAINT fec_cad_entradas CHECK (fecha_cad_ent > 12),
-CONSTRAINT pk_entradas PRIMARY KEY (id_entradas),
-CONSTRAINT fk1_entradas FOREIGN KEY (lote_id_entradas) REFERENCES lotes (id_lotes)
-);
-
-INSERT INTO
-entradas (
-id_mp_entradas,
-id_prov_entradas,
-lote_id_entradas,
-fecha_entradas,
-fecha_cad_entradas,
-cantidad_entradas,
-precio_entradas
-)
-VALUES
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-(),
-();
- */
