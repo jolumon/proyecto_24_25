@@ -31,27 +31,20 @@ rel_cosm_mp(cosm_id_rcm, mp_id_rcm,porcentaje_rcm)
     fk1: cosm_id_rcm references cosmeticos(id_cosmeticos)
     fk2: mp_id_rcm references materias_primas(id_mps)
 
-ordenes(id_ordenes, lote_ordenes, cantidad_ordenes, fecha_cad_ordenes,fecha_fab_ordenes,cosmetico_id_ordenes)
-    pK: id_ordenes
-    fk: cosmetico_id_ordenes
-
 cosmeticos(id_cosmeticos, nombre_cosmeticos,fecha_cad_cosmeticos, tipo_cosmeticos,cliente_id_cosmeticos)
     pk: id_cosmeticos
     fk1: tipo_cosmeticos references tipos(id_cosmeticos)
     fk2: cliente_id_cosmeticos references clientes(id_clientes)
 
-entradas_lotes (
-		id_entradas,
-		mp_id_entradas,
-		proveedor_id_entradas,
-		fecha_entradas,
-		fecha_cad_entradas,
-		cantidad_entradas,
-		id_lotes,
-		nombre_lotes,
-		cantidad_lotes,
-        ubicacion_id_el
-	)
+entradas_lotes ( id_ent_el, mp_id_el, proveedor_id_el, fecha_el, fecha_cad_el, cantidad_el, nombre_lotes, cantidad_lotes_el, ubicacion_id_el)
+    pk: id_ent_el
+    fk1: mp_id_el, proveedor_id_el references rel_mps_proveedores(mp_id_rmp,proveedor_id_rmp)
+    fk2:  ubicacion_id_el references ubicaciones(id_ubicaciones)
+
+ordenes(id_ordenes, lote_ordenes, cantidad_ordenes, fecha_cad_ordenes,fecha_fab_ordenes,cosmetico_id_ordenes,indicaciones_ordenes)
+    pK: id_ordenes
+    fk: cosmetico_id_ordenes
+
 
 /*
 lotes(id_lotes,nombre_lotes,cantidad_lotes,entrada_id_lotes,ubicacion_id_lotes)

@@ -1,65 +1,29 @@
-CREATE TABLE
-	tipos (
+CREATE TABLE tipos (
 		id_tipos serial NOT NULL,
 		nombre_tipos varchar(10),
 		activo_tipos bool default true,
 		CONSTRAINT pk_tipos PRIMARY KEY (id_tipos)
-	);
+);
 
-INSERT INTO
-	tipos (nombre_tipos)
-VALUES
+INSERT
+	INTO
+	tipos(nombre_tipos)
+values
 	('Emulsión'),
 	('Gel'),
 	('Polvo'),
 	('Solución');
 
-CREATE TABLE
-	ubicaciones (
-		id_ubicaciones serial NOT NULL,
-		nombre_ubicaciones varchar(20),
-		lotes_id_ubicaciones int not null,
-		activo_ubicaciones bool default true,
-		CONSTRAINT pk_ubicaciones PRIMARY KEY (id_ubicaciones)
-	);
 
-INSERT INTO
-	ubicaciones (nombre_ubicaciones)
-VALUES
-	('0101A01'),
-	('0101A02'),
-	('0101A03'),
-	('0101B01'),
-	('0101B02'),
-	('0101B03'),
-	('0101C01'),
-	('0101C02'),
-	('0101C03'),
-	('0101D01'),
-	('0101D02'),
-	('0101D03'),
-	('0102A01'),
-	('0102A02'),
-	('0102A03'),
-	('0102B01'),
-	('0102B02'),
-	('0102B03'),
-	('0102C01'),
-	('0102C02'),
-	('0102C03'),
-	('0102D01'),
-	('0102D02'),
-	('0102D03');
 
-CREATE TABLE
-	salas (
-		id_salas serial NOT NULL,
+create table salas (
+		id_salas serial not null,
 		nombre_salas varchar(20),
 		activo_salas bool default true,
-		CONSTRAINT pk_salas PRIMARY KEY (id_salas)
-	)
-INSERT INTO
-	salas (nombre_salas)
+		constraint pk_salas primary key (id_salas)
+	);
+
+INSERT into salas (nombre_salas)
 VALUES
 	('Pesada'),
 	('Fabricación 1'),
@@ -68,8 +32,7 @@ VALUES
 	('Envasado 2'),
 	('Acondicionamiento');
 
-CREATE TABLE
-	equipos (
+CREATE table equipos (
 		id_equipos serial NOT NULL,
 		nombre_equipos varchar(10),
 		fecha_adquisicion_equipos date NOT NULL,
@@ -81,21 +44,19 @@ CREATE TABLE
 		CONSTRAINT fk_equipos_sala FOREIGN KEY (sala_id_equipos) REFERENCES salas (id_salas)
 	);
 
-INSERT INTO
-	equipos (
+INSERT into equipos (
 		nombre_equipos,
 		fecha_adquisicion_equipos,
 		capacidad_equipos,
 		sala_id_equipos
 	)
 VALUES
-	('P016', '26/10/2024', 200, 2),
-	('P017', '26/10/2024', 500, 2),
-	('P019', '26/10/2024', 200, 1),
-	('P020', '26/10/2024', 400, 1);
+	('P016', '2024-10-26', 200, 2),
+	('P017', '2024-10-26', 500, 2),
+	('P019', '2024-10-26', 200, 1),
+	('P020', '2024-10-26', 400, 1);
 
-CREATE TABLE
-	clientes (
+CREATE table clientes (
 		id_clientes serial NOT NULL,
 		nombre_clientes varchar(100) NOT NULL,
 		direccion_clientes varchar(100) NULL,
@@ -109,8 +70,7 @@ CREATE TABLE
 		CONSTRAINT pk_clientes PRIMARY KEY (id_clientes)
 	);
 
-INSERT INTO
-	clientes (
+INSERT into clientes (
 		nombre_clientes,
 		direccion_clientes,
 		codigo_postal_clientes,
@@ -167,8 +127,7 @@ VALUES
 		true
 	);
 
-CREATE TABLE
-	materias_primas (
+CREATE table materias_primas (
 		id_mps serial NOT NULL,
 		nombre_mps varchar(50) NULL,
 		cantidad_mps float NULL DEFAULT 0.0,
@@ -176,8 +135,7 @@ CREATE TABLE
 		CONSTRAINT pk PRIMARY KEY (id_mps)
 	);
 
-INSERT INTO
-	materias_primas (nombre_mps)
+INSERT into materias_primas (nombre_mps)
 VALUES
 	('Agua'),
 	('Ultrez 10'),
@@ -196,8 +154,7 @@ VALUES
 	('Euxyl PE9010'),
 	('Propilenglicol');
 
-CREATE TABLE
-	proveedores (
+CREATE table proveedores (
 		id_proveedores serial NOT NULL,
 		nombre_proveedores varchar(50) NULL,
 		direccion_proveedores varchar(60) NULL,
@@ -212,12 +169,11 @@ CREATE TABLE
 		CONSTRAINT pk_proveedores PRIMARY KEY (id_proveedores)
 	);
 
-INSERT INTO
-	proveedores (nombre_proveedores)
+INSERT into proveedores (nombre_proveedores)
 VALUES
 	('Lipotec'),
 	('Seppic'),
-	('Veracetics',),
+	('Veracetics'),
 	('Escuder'),
 	('Provital'),
 	('Interfat'),
@@ -227,8 +183,7 @@ VALUES
 	('M2C2 Lab'),
 	('Saffic');
 
-CREATE TABLE
-	rel_mps_proveedores (
+CREATE table rel_mps_proveedores (
 		mp_id_rmp int4 NOT NULL,
 		proveedor_id_rmp int4 NOT NULL,
 		CONSTRAINT pk_rel_mps_proveedores PRIMARY KEY (mp_id_rmp, proveedor_id_rmp),
@@ -236,8 +191,7 @@ CREATE TABLE
 		CONSTRAINT fk2_mrel_mps_proveedores FOREIGN KEY (proveedor_id_rmp) REFERENCES proveedores (id_proveedores)
 	);
 
-insert into
-	rel_mps_proveedores (mp_id_rmp, proveedor_id_rmp)
+insert into rel_mps_proveedores (mp_id_rmp, proveedor_id_rmp)
 values
 	(1, 10),
 	(2, 1),
@@ -260,41 +214,51 @@ values
 	(10, 4),
 	(4, 8);
 
-CREATE TABLE
-	cosmeticos (
+CREATE table cosmeticos (
 		id_cosmeticos serial NOT NULL,
 		nombre_cosmeticos varchar(45) NOT NULL,
 		fecha_cad_cosmeticos int default 36,
 		tipo_id_cosmeticos int not null,
-		cliente_id_cosmeticos int not null
+		cliente_id_cosmeticos int not null,
+		activo_cosmeticos bool default true,
+		CONSTRAINT pk_cosmeticos PRIMARY KEY (id_cosmeticos)
+		
 	);
 
-INSERT INTO
+insert
+	into
 	cosmeticos (
 		nombre_cosmeticos,
 		cliente_id_cosmeticos,
 		tipo_id_cosmeticos
 	)
-VALUES
-	('Crema día', 1, 1),
-	('Crema noche', 1, 1),
-	('Contorno ojos', 1, 2),
-	('Gel aloe', 2, 2),
-	('Tónico' 2, 3);
+values
+	('Crema día',
+1,
+1),
+	('Crema noche',
+1,
+1),
+	('Contorno ojos',
+1,
+2),
+	('Gel aloe',
+2,
+2),
+	('Tónico',
+2,
+3);
 
-CREATE TABLE
-	rel_cosm_mp (
+CREATE table rel_cosm_mp (
 		cosm_id_rcm int NOT NULL,
 		mp_id_rcm int NOT NULL,
 		porcentaje_rcm decimal(10, 2),
-		CONSTRAINT pk_rel_cosm_mp PRIMARY KEY (cosm_id_rcm, proveedor_id_rmp),
-		CONSTRAINT fk1_rrel_cosm_mp FOREIGN KEY (cosm_id_rcm) REFERENCES cosmeticos (id_cosmeticos),
+		CONSTRAINT pk_rel_cosm_mp PRIMARY KEY (cosm_id_rcm, mp_id_rcm),
+		CONSTRAINT fk1_rel_cosm_mp FOREIGN KEY (cosm_id_rcm) REFERENCES cosmeticos (id_cosmeticos),
 		CONSTRAINT fk2_rel_cosm_mp FOREIGN KEY (mp_id_rcm) REFERENCES materias_primas (id_mps)
 	);
 
-INSERT INTO
-	rel_cosm_mp
-VALUES
+INSERT into rel_cosm_mp VALUES
 	(1, 1, 87.05),
 	(1, 2, 0.3),
 	(1, 3, 5),
@@ -330,19 +294,112 @@ VALUES
 	(5, 12, 0.15),
 	(5, 14, 0.1);
 
-CREATE TABLE
-	entradas_lotes (
+CREATE table ubicaciones (
+		id_ubicaciones serial NOT NULL,
+		nombre_ubicaciones varchar(20),
+		lotes_id_ubicaciones int not null,
+		activo_ubicaciones bool default true,
+		CONSTRAINT pk_ubicaciones PRIMARY KEY (id_ubicaciones)
+	);
+
+INSERT into ubicaciones (nombre_ubicaciones,lotes_id_ubicaciones)
+VALUES
+	('0101A01',1),
+	('0101A02',2),
+	('0101A03',3),
+	('0101B01',4),
+	('0101B02',5),
+	('0101B03',6),
+	('0101C01',7),
+	('0101C02',8),
+	('0101C03',9),
+	('0101D01',10),
+	('0101D02',11),
+	('0101D03',12),
+	('0102A01',13),
+	('0102A02',14),
+	('0102A03',15);
+	/*
+	('0102B01'),
+	('0102B02'),
+	('0102B03'),
+	('0102C01'),
+	('0102C02'),
+	('0102C03'),
+	('0102D01'),
+	('0102D02'),
+	('0102D03');
+*/
+
+CREATE table entradas_lotes (
 		id_ent_el serial not null,
 		mp_id_el int not null,
 		proveedor_id_el int not null,
 		fecha_el date,
+		fecha_cad_el date,
+		cantidad_el int,
+		nombre_lotes varchar(10),
+		cantidad_lotes_el decimal(10, 2),
+		ubicacion_id_el int
+	);
+
+INSERT into entradas_lotes (
+		mp_id_el,
+		proveedor_id_el,
+		fecha_el,
 		fecha_cad_el,
-		cantidad_el,
-		id_lotes serial not null,
 		nombre_lotes,
+		cantidad_el,
 		cantidad_lotes_el,
 		ubicacion_id_el
+	)
+VALUES
+	(1, 10, '2028-11-26', '2028-11-26', 'MF0001', 1000000,1000000,1),
+	(2, 1, '2028-11-26', '2028-11-26', 'MF0001', 20000,20000,2),
+	(3, 2, '2028-11-26', '2028-11-26', 'MF0002', 25000,25000,3),
+	(4, 3, '2028-11-26', '2028-11-26', 'MF0003', 2000,2000,4),
+	(5, 4, '2028-11-26', '2028-11-26', 'MF0004', 5000,5000,5),
+	(6, 4, '2028-11-26', '2028-11-26', 'MF0005', 5000,5000,6),
+	(7, 6, '2028-11-26', '2028-11-26', 'MF0006', 5000,5000,7),
+	(8, 7, '2028-11-26', '2028-11-26', 'MF0007', 25000,25000,8),
+	(9, 8, '2028-11-26', '2028-11-26', 'MF0008', 1000,1000,9),
+	(10, 9, '2028-11-26', '2028-11-26', 'MF009', 200000,200000,10),
+	(11, 4, '2028-11-26', '2028-11-26', 'MF0010', 5000,5000,11),
+	(12, 4, '2028-11-26', '2028-11-26', 'MF0011', 250000,25000,12),
+	(13, 9, '2028-11-26', '2028-11-26', 'MF0012', 5000,5000,13),
+	(14, 4, '2028-11-26', '2028-11-26', 'MF0013', 10000,10000,14),
+	(15, 8, '2028-11-26', '2028-11-26', 'MF0014', 200000,20000,15);
+
+
+
+CREATE table ordenes (
+		id_ordenes serial NOT NULL,
+		cosmetico_id_ordenes int NOT NULL,
+		fecha_fab_ordenes date NOT NULL,
+		lote_ordenes varchar(10) NOT NULL,
+		cantidad_ordenes int NOT NULL,
+		fecha_cad_ordenes date NOT NULL,
+		equipo_id_ordenes int NOT NULL,
+		indicaciones_ordenes varchar(1000) NULL,
+		CONSTRAINT ch CHECK ((fecha_fab_ordenes < fecha_cad_ordenes)),
+		CONSTRAINT pk_ofab PRIMARY KEY (id_ordenes),
+		CONSTRAINT fk_ofab1 FOREIGN KEY (cosmetico_id_ordenes) REFERENCES cosmeticos (id_cosmeticos),
+		CONSTRAINT fk_ofab2 FOREIGN KEY (equipo_id_ordenes) REFERENCES equipos (id_equipos)
 	);
+
+INSERT into ordenes (
+		cosmetico_id_ordenes,
+		fecha_fab_ordenes,
+		lote_ordenes,
+		cantidad_ordenes,
+		fecha_cad_ordenes,
+		equipo_id_ordenes
+	)
+VALUES
+	(1, '2024-10-25', 'MF0015',50,'2027-12-24', 3),
+	(1, '2024-11-26', 'MF0016',250, '2027-12-25', 4);
+
+
 
 /*
 CREATE TABLE
@@ -415,77 +472,3 @@ VALUES
 (),
 ();
  */
-CREATE TABLE
-	ordenes_fab (
-		id_ofab serial NOT NULL,
-		id_prod_ofab int NOT NULL,
-		fecha_ofab date NOT NULL,
-		lote_ofab varchar(10) NOT NULL,
-		/*No haría falta, se podría identificar con la pk*/
-		fecha_cad_ofab date NULL,
-		equipo_ofab int4 NULL,
-		cantidad_ofab int4 NULL,
-		indicaciones_ofab varchar(1000) NULL,
-		CONSTRAINT ch CHECK ((fecha_ofab < fecha_cad_ofab)),
-		CONSTRAINT pk_ofab PRIMARY KEY (id_ofab, id_prod_ofab),
-		CONSTRAINT fk_ofab1 FOREIGN KEY (id_prod_ofab) REFERENCES productos (id_prod),
-		CONSTRAINT fk_ofab2 FOREIGN KEY (equipo_ofab) REFERENCES equipos (id_eq)
-	);
-
-INSERT INTO
-	ordenes_fab (
-		id_prod_ofab,
-		fecha_ofab,
-		lote_ofab,
-		fecha_cad_ofab,
-		equipo_ofab,
-		cantidad_ofab,
-		indicaciones_ofab
-	)
-VALUES
-	(
-		1,
-		'2023-06-06',
-		'20230001',
-		'2025-06-06',
-		2,
-		75,
-		'Todo junto a la bartola'
-	),
-	(
-		1,
-		'2023-06-08',
-		'20230002',
-		'2025-06-08',
-		5,
-		1600,
-		'Una fase detras de otra. Subir a 75ºC, 
-	 emulsionar.Enfriar y por debajo de 40ºC añadir fase termolabil'
-	),
-	(
-		1,
-		'2023-06-04',
-		'20230003',
-		'2025-06-03',
-		5,
-		800,
-		'Todo a la vez'
-	),
-	(
-		2,
-		'2023-11-11',
-		'1465sdfd',
-		'2026-03-02',
-		4,
-		300,
-		NULL
-	),
-	(
-		2,
-		'2023-11-17',
-		'abc',
-		'2024-01-01',
-		4,
-		300,
-		NULL
-	);
