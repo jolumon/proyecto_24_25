@@ -15,7 +15,7 @@ equipos(id_equipos,nombre_equipos,fecha_adquisicion_equipos, revision_equipos,sa
 clientes(id_clientes, nombre_clientes, direccion_clientes, codigo_postal_clientes, poblacion_clientes, provincia_clientes, email_clientes, telefono_clientes)
     pK: id_clientes
 
-materias_primas(id_mps, nombre_mps,cantidad_mps)
+materias_primas(id_mps, nombre_mps)
     pk:id_mps
 
 proveedores(id_proveedores, nombre_proveedores, direccion_proveeedores, codigo_postal_proveedores, poblacion_proveedores, provincia_proveedores, email_proveedores, telefono_proveedores)

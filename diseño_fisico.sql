@@ -130,7 +130,7 @@ VALUES
 CREATE table materias_primas (
 		id_mps serial NOT NULL,
 		nombre_mps varchar(50) NULL,
-		cantidad_mps float NULL DEFAULT 0.0,
+		/*cantidad_mps float NULL DEFAULT 0.0,*/
 		activo_mps bool DEFAULT true,
 		CONSTRAINT pk PRIMARY KEY (id_mps)
 	);
