@@ -135,7 +135,7 @@ CREATE table
 	materias_primas (
 		id_mps serial NOT NULL,
 		nombre_mps varchar(50) NULL,
-		cantidad_mps decimal(10, 2),
+		/*cantidad_mps decimal(10, 2),*/
 		activo_mps bool DEFAULT true,
 		CONSTRAINT pk PRIMARY KEY (id_mps)
 	);
@@ -386,11 +386,11 @@ CREATE TABLE
 	entradas (
 		id_ent serial NOT NULL,
 		fecha_ent date,
-		nombre_lotes varchar(10) unique,
-		cantidad_lotes,
-		ubi_id_lotes int unique,
-		CONSTRAINT pk_lotes PRIMARY KEY (id_lotes),
-		CONSTRAINT fk2_lotes FOREIGN KEY (ubi_id_lotes) REFERENCES ubicaciones (id_ubicaciones)
+		nombre_lotes_ent varchar(10) unique,
+		cantidad_ent decimal(10,2),
+		ubi_id_ent int unique,
+		CONSTRAINT pk_entradas PRIMARY KEY (id_ent),
+		CONSTRAINT fk2_entradas FOREIGN KEY (ubi_id_ent) REFERENCES ubicaciones (id_ubicaciones)
 	);
 
 CREATE TABLE
@@ -434,7 +434,7 @@ CREATE TABLE
 		ord_id_ocm int NOT NULL,
 		cosmetico_id_ocm int not null,
 		mp_id_ocm int not null,
-		constraint pk_ocm PRIMARY KEY (ent_id_ocm,cosmetico_id_ocm, mp_id_ocm),
+		constraint pk_ocm PRIMARY KEY (ord_id_ocm,cosmetico_id_ocm, mp_id_ocm),
 		constraint fk1_ocm FOREIGN KEY (ord_id_ocm) REFERENCES ordenes (id_ordenes),
 		constraint fk2_ocm FOREIGN KEY (cosmetico_id_ocm, mp_id_ocm) REFERENCES rel_cosm_mp(cosm_id_rcm, mp_id_rcm)
 	);
@@ -448,3 +448,12 @@ INSERT INTO rel_ocm(ord_id_ocm,cosmetico_id_ocm,mp_id_ocm) values (1,1, 1),
 	(1,1, 12),
 	(1,1, 15),
 	(1,1, 10);
+
+create table lotes_stock(
+	id_lotes_stock serial not null,
+	nombre_lotes_stock varchar(10) unique,
+	cantidad_lotes_stock DECIMAL(10,2),
+	mp_id_lotes_stock int,
+	constraint pk_id_lotes_stock PRIMARY KEY(id_lotes_stock),
+	constraint fk_mp_id_lotes_stock FOREIGN KEY (mp_id_lotes_stock) REFERENCES materias_primas(id_mps)
+);
