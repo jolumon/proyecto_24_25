@@ -451,10 +451,14 @@ CREATE TABLE
 		constraint fk2_emp FOREIGN KEY (mp_id_emp, prov_id_emp) REFERENCES rel_mps_proveedores (mp_id_rmp, proveedor_id_rmp)
 	);
 */
+
+
+
 CREATE table
 	ordenes (
 		id_ordenes serial NOT NULL,
 		fecha_fab_ordenes date NOT NULL,
+		cosmetico_id_ordenes int not null,
 		lote_ordenes varchar(10) NOT NULL,
 		cantidad_ordenes int NOT NULL,
 		fecha_cad_ordenes date NOT NULL,
@@ -462,20 +466,43 @@ CREATE table
 		indicaciones_ordenes varchar(1000) NULL,
 		CONSTRAINT ch CHECK ((fecha_fab_ordenes < fecha_cad_ordenes)),
 		CONSTRAINT pk_ofab PRIMARY KEY (id_ordenes),
-		CONSTRAINT fk_ofab FOREIGN KEY (equipo_id_ordenes) REFERENCES equipos (id_equipos)
+		CONSTRAINT fk1_ofab FOREIGN KEY (cosmetico_id_ordenes) REFERENCES cosmeticos (id_cosmeticos),
+		CONSTRAINT fk2_ofab FOREIGN KEY (equipo_id_ordenes) REFERENCES equipos (id_equipos)
 	);
 
-INSERT into
-	ordenes (
-		fecha_fab_ordenes,
-		lote_ordenes,
-		cantidad_ordenes,
-		fecha_cad_ordenes,
-		equipo_id_ordenes
-	)
-VALUES
-	('2024-10-25', 'OF00001', 50, '2027-12-24', 3),
-	('2024-11-26', 'OF00002', 250, '2027-12-25', 4);
+CREATE OR REPLACE FUNCTION generar_fecha_caducidad_orden()
+RETURNS TRIGGER AS $$
+BEGIN
+	NEW.lote_ordenes := 'OF' || NEW.id_ordenes;
+	NEW.fecha_cad_ordenes := NEW.fecha_fab_ordenes+INTERVAL '3 years';
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+create trigger genera_fecha_cad_orden
+before
+insert
+	on
+	ordenes
+for each row
+execute function generar_fecha_caducidad_orden();
+
+
+
+insert
+	into
+	ordenes (fecha_fab_ordenes,
+	cosmetico_id_ordenes,
+	cantidad_ordenes,
+	equipo_id_ordenes)
+values ('2024-11-03',
+1,
+200,
+4),
+('2024-10-25',
+2,
+100,
+3);
 
 CREATE TABLE
 	rel_ocm (
@@ -531,5 +558,6 @@ CREATE TRIGGER after_insert_entradas
 AFTER INSERT ON entradas
 FOR EACH ROW
 EXECUTE FUNCTION insertar_en_lotes_stock();
+
 
 
