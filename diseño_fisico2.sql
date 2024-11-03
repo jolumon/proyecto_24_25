@@ -385,14 +385,62 @@ VALUES
 CREATE TABLE
 	entradas (
 		id_ent serial NOT NULL,
+		mp_id_ent int not null,
+		proveedor_id_ent int not null,
 		fecha_ent date,
 		nombre_lotes_ent varchar(10) unique,
+		fecha_caducidad_ent date,
 		cantidad_ent decimal(10,2),
 		ubi_id_ent int unique,
 		CONSTRAINT pk_entradas PRIMARY KEY (id_ent),
+		constraint fk1_entradas foreign KEY(mp_id_ent,proveedor_id_ent) references rel_mps_proveedores (mp_id_rmp, proveedor_id_rmp),
 		CONSTRAINT fk2_entradas FOREIGN KEY (ubi_id_ent) REFERENCES ubicaciones (id_ubicaciones)
 	);
 
+CREATE OR REPLACE FUNCTION generar_lote_entradas()
+RETURNS TRIGGER AS $$
+BEGIN
+	NEW.nombre_lotes_ent := 'BT' || NEW.id_ent;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+create trigger after_insert_entrada
+before
+insert
+	on
+	entradas
+for each row
+execute function generar_lote_entradas();
+
+insert
+	into
+	entradas (fecha_ent,
+	mp_id_ent,
+	proveedor_id_ent,
+	cantidad_ent,
+	ubi_id_ent)
+values ('2024-11-02',1,10,100,1);
+
+CREATE OR REPLACE FUNCTION estado_ubicacion()
+RETURNS TRIGGER AS $$
+BEGIN
+	UPDATE ubicaciones
+    SET libre_ubicaciones = false
+    WHERE id_ubicaciones = NEW.ubi_id_ent;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+create trigger after_insert_entrada2
+after
+insert
+	on
+	entradas
+for each row
+execute function estado_ubicacion();
+
+/*
 CREATE TABLE
 	rel_emp (
 		ent_id_emp int not null,
@@ -402,7 +450,7 @@ CREATE TABLE
 		constraint fk1_emp FOREIGN KEY (ent_id_emp) REFERENCES entradas (id_ent),
 		constraint fk2_emp FOREIGN KEY (mp_id_emp, prov_id_emp) REFERENCES rel_mps_proveedores (mp_id_rmp, proveedor_id_rmp)
 	);
-
+*/
 CREATE table
 	ordenes (
 		id_ordenes serial NOT NULL,
@@ -434,6 +482,7 @@ CREATE TABLE
 		ord_id_ocm int NOT NULL,
 		cosmetico_id_ocm int not null,
 		mp_id_ocm int not null,
+		cantidad_cosm_mp_ocm decimal(10,2),
 		constraint pk_ocm PRIMARY KEY (ord_id_ocm,cosmetico_id_ocm, mp_id_ocm),
 		constraint fk1_ocm FOREIGN KEY (ord_id_ocm) REFERENCES ordenes (id_ordenes),
 		constraint fk2_ocm FOREIGN KEY (cosmetico_id_ocm, mp_id_ocm) REFERENCES rel_cosm_mp(cosm_id_rcm, mp_id_rcm)
@@ -448,12 +497,39 @@ INSERT INTO rel_ocm(ord_id_ocm,cosmetico_id_ocm,mp_id_ocm) values (1,1, 1),
 	(1,1, 12),
 	(1,1, 15),
 	(1,1, 10);
-
 create table lotes_stock(
 	id_lotes_stock serial not null,
 	nombre_lotes_stock varchar(10) unique,
-	cantidad_lotes_stock DECIMAL(10,2),
+	cantidad_lotes_stock DECIMAL(10,
+2),
 	mp_id_lotes_stock int,
-	constraint pk_id_lotes_stock PRIMARY KEY(id_lotes_stock),
-	constraint fk_mp_id_lotes_stock FOREIGN KEY (mp_id_lotes_stock) REFERENCES materias_primas(id_mps)
+	constraint pk_id_lotes_stock primary key(id_lotes_stock),
+	constraint fk_mp_id_lotes_stock foreign key (mp_id_lotes_stock) references materias_primas(id_mps)
 );
+
+create or replace
+function insertar_en_lotes_stock()
+returns trigger as $$
+begin
+    insert
+	into
+	lotes_stock (nombre_lotes_stock,
+	cantidad_lotes_stock,
+	fecha_caducidad_lotes_stock,
+	mp_id_lotes_stock)
+values (NEW.nombre_lotes_ent,
+NEW.cantidad_ent,
+NEW.fecha_caducidad_ent,
+NEW.mp_id_ent);
+
+return new;
+end;
+
+$$ language plpgsql;
+
+CREATE TRIGGER after_insert_entradas
+AFTER INSERT ON entradas
+FOR EACH ROW
+EXECUTE FUNCTION insertar_en_lotes_stock();
+
+
