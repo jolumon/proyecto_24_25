@@ -1,3 +1,4 @@
+--Creación de la tabla tipos de cosméticos y inserción de los datos
 CREATE TABLE
     tipos (
         id_tipos serial NOT NULL,
@@ -13,7 +14,7 @@ values
     ('Gel'),
     ('Polvo'),
     ('Solución');
-
+-- Creación de la tabla salas donde se encuentran los equipos.
 create table
     salas (
         id_salas serial not null,
@@ -31,7 +32,7 @@ VALUES
     ('Envasado 1'),
     ('Envasado 2'),
     ('Acondicionamiento');
-
+--Creación de la tabla equipos donde se realizan las fabricaciones
 CREATE table
     equipos (
         id_equipos serial NOT NULL,
@@ -57,7 +58,7 @@ VALUES
     ('P017', '2024-10-26', 500, 2),
     ('P019', '2024-10-26', 200, 1),
     ('P020', '2024-10-26', 400, 1);
-
+--Creación de la tabla clientes propietarios de los cosméticos que se fabrican en el laboratorio.
 CREATE table
     clientes (
         id_clientes serial NOT NULL,
@@ -130,7 +131,7 @@ VALUES
         'Pepe Papi Papito',
         true
     );
-
+--Creación de las la tabla materias primas con las que se hacen los cosméticos.
 CREATE table
     materias_primas (
         id_mps serial NOT NULL,
@@ -159,7 +160,7 @@ VALUES
     ('Cítrico acido'),
     ('Euxyl PE9010'),
     ('Propilenglicol');
-
+--Creación de la tabla proveedores que son los que suministran las materias primas.
 CREATE table
     proveedores (
         id_proveedores serial NOT NULL,
@@ -190,7 +191,7 @@ VALUES
     ('Quimidroga'),
     ('M2C2 Lab'),
     ('Saffic');
-
+--Creación de la tabla rel_mps_proveedores que se obtiene de una relación muchos a muchos entre las tablas materias primas y proveedores.
 CREATE table
     rel_mps_proveedores (
         mp_id_rmp int4 NOT NULL,
@@ -223,7 +224,7 @@ values
     (2, 9),
     (10, 4),
     (4, 8);
-
+--Creación de la tabla cosmeticos, son los productos que se fabrican en el laboratorio.
 CREATE table
     cosmeticos (
         id_cosmeticos serial NOT NULL,
@@ -249,7 +250,7 @@ values
     ('Contorno ojos', 1, 2),
     ('Gel aloe', 2, 2),
     ('Tónico', 2, 3);
-
+--Creación de la tabla rel_cosm_mp que se obtiene de uan relación muchos a muchos entre cosméticos y materias primas e indica la composición del cosmético.
 CREATE table
     rel_cosm_mp (
         cosm_id_rcm int NOT NULL,
@@ -297,7 +298,7 @@ VALUES
     (5, 11, 0.3),
     (5, 12, 0.15),
     (5, 14, 0.1);
-
+--Creación de la tabla ubicaciones, en cada ubicación se almacena una materia prima. ******SE PODRÍA CAMBIAR PARA NO TENER TANTAS UBICACIONES*******
 CREATE table
     ubicaciones (
         id_ubicaciones serial NOT NULL,
@@ -334,12 +335,13 @@ VALUES
     ('0102D01'),
     ('0102D02'),
     ('0102D03');
-
+-- Creación de la tabla lotes_stock. Representa el inventario de materias primas con lotes y cantidades.
 create table
     lotes_stock (
         id_lotes_stock serial not null,
         nombre_lotes_stock varchar(10) unique,
         cantidad_lotes_stock DECIMAL(10, 2),
+        fecha_caducidad_lotes_stock date,
         mp_id_lotes_stock int,
         constraint pk_id_lotes_stock primary key (id_lotes_stock),
         constraint fk_mp_id_lotes_stock foreign key (mp_id_lotes_stock) references materias_primas (id_mps)
@@ -352,7 +354,7 @@ CREATE TABLE
         proveedor_id_ent int not null,
         fecha_ent date,
         nombre_lotes_ent varchar(10) unique,
-        fecha_caducidad_ent date,
+        fecha_caducidad_ent date not null,
         cantidad_ent decimal(10, 2),
         ubi_id_ent int unique,
         CONSTRAINT pk_entradas PRIMARY KEY (id_ent),
@@ -360,7 +362,7 @@ CREATE TABLE
         CONSTRAINT fk2_entradas FOREIGN KEY (ubi_id_ent) REFERENCES ubicaciones (id_ubicaciones)
     );
 
-
+--Funcion para generar de forma automatica los lotes de entrada de las materias primas
 CREATE OR REPLACE FUNCTION generar_lote_entradas()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -368,7 +370,7 @@ NEW.nombre_lotes_ent := 'BT' || NEW.id_ent;
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
+--Trigger que ejecuta la funcion generar_lote_entradas() despues de realizar una entrada de materia prima para generar el lote de entrada. 
 create trigger after_insert_entrada
 before
 insert
@@ -376,7 +378,7 @@ on
 entradas
 for each row
 execute function generar_lote_entradas();
-
+--Fución que cambia el estado de la ubicación que se utiliza para almacenar una materia prima después de su correspondiente entrada.
 CREATE OR REPLACE FUNCTION estado_ubicacion()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -386,7 +388,7 @@ WHERE id_ubicaciones = NEW.ubi_id_ent;
 RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
+-- Trigger que  ejecuta la función after_insert_entrada2() para cambiar el estado de la ubicación que acaba de ser ocupada por una materia prima.
 create trigger after_insert_entrada2
 after
 insert
@@ -394,7 +396,7 @@ on
 entradas
 for each row
 execute function estado_ubicacion();
- 
+ -- Creación de la tabla ordenes. Cada inserción representa una fabricación de un cosmético en la que se indica cantidad a fabricar. Se el asigna un lote y una fecha de caducidad en función de la "caducidad del cosmetico".
 CREATE table
     ordenes (
         id_ordenes serial NOT NULL,
@@ -474,9 +476,11 @@ insert
 into
 lotes_stock (nombre_lotes_stock,
 cantidad_lotes_stock,
+fecha_caducidad_lotes_stock,
 mp_id_lotes_stock)
 values (NEW.nombre_lotes_ent,
 NEW.cantidad_ent,
+NEW.fecha_caducidad_ent,
 NEW.mp_id_ent);
 
 return new;
@@ -484,41 +488,125 @@ end;
 
 $$ language plpgsql;
 
-CREATE TRIGGER after_insert_entradas
-AFTER INSERT ON entradas
-FOR EACH ROW
-EXECUTE FUNCTION insertar_en_lotes_stock();
- */
-insert into
-    entradas (
+create trigger after_insert_entradas
+after
+insert
+	on
+	entradas
+for each row
+execute function insertar_en_lotes_stock();
+ 
+insert
+	into
+	entradas (
         fecha_ent,
-        mp_id_ent,
-        proveedor_id_ent,
-        cantidad_ent,
-        ubi_id_ent
+	mp_id_ent,
+	proveedor_id_ent,
+	cantidad_ent,
+	fecha_caducidad_ent,
+	ubi_id_ent
     )
 values
-    ('2024-11-02', 1, 10, 100, 1),
-    ('2024-11-02', 2, 1, 50, 2),
-    ('2024-11-02', 3, 2, 50, 3),
-    ('2024-11-02', 4, 3, 50, 4),
-    ('2024-11-02', 5, 4, 50, 5),
-    ('2024-11-02', 6, 4, 50, 6),
-    ('2024-11-02', 7, 6, 50, 7),
-    ('2024-11-02', 8, 7, 50, 8),
-    ('2024-11-02', 9, 8, 50, 9),
-    ('2024-11-02', 10, 9, 50, 10),
-    ('2024-11-02', 11, 4, 50, 11),
-    ('2024-11-02', 12, 4, 50, 12),
-    ('2024-11-02', 12, 4, 50, 13);
-
-    CREATE TABLE fabricacion(
+    ('2024-11-02',
+1,
+10,
+1000000,
+'2028-11-02',
+1),
+    ('2024-11-02',
+2,
+1,
+5000,
+'2028-11-02',
+2),
+    ('2024-11-02',
+3,
+2,
+5000,
+'2028-11-02',
+3),
+    ('2024-11-02',
+4,
+3,
+5000,
+'2028-11-02',
+4),
+    ('2024-11-02',
+5,
+4,
+5000,
+'2028-11-02',
+5),
+    ('2024-11-02',
+6,
+4,
+5000,
+'2028-11-02',
+6),
+    ('2024-11-02',
+7,
+6,
+5000,
+'2028-11-02',
+7),
+    ('2024-11-02',
+8,
+7,
+5000,
+'2028-11-02',
+8),
+    ('2024-11-02',
+9,
+8,
+5000,
+'2028-11-02',
+9),
+    ('2024-11-02',
+10,
+9,
+5000,
+'2028-11-02',
+10),
+    ('2024-11-02',
+11,
+4,
+5000,
+'2028-11-02',
+11),
+    ('2024-11-02',
+12,
+4,
+5000,
+'2028-11-02',
+12),
+    ('2024-11-02',
+12,
+4,
+5000,
+'2028-11-02',
+13),
+('2024-11-02',
+14,
+4,
+5000,
+'2028-11-02',
+15),
+('2024-11-02',
+15,
+8,
+5000,
+'2028-11-02',
+16);
+    
+   
+create table fabricacion(
 
         orden_id_fab int not null,
         lote_id_fab int not null,
         mp_id_fab int not null,
         cantidad_fab int not null,
-        constraint pk_fab primary key (orden_id_fab,lote_id_fab),
+        constraint pk_fab primary key (orden_id_fab,
+lote_id_fab),
         constraint fk1_fab foreign key(orden_id_fab) references ordenes(id_ordenes),
         constraint fk2_fab foreign key(lote_id_fab) references lotes_stock(id_lotes_stock),
         constraint fk3_fab foreign key(mp_id_fab) references materias_primas(id_mps) 
