@@ -32,7 +32,7 @@ VALUES
     ('Envasado 1'),
     ('Envasado 2'),
     ('Acondicionamiento');
---Creación de la tabla equipos donde se realizan las fabricaciones
+--Creación de la tabla equipos donde se realizan las detalle_o_fabricaciones
 CREATE table
     equipos (
         id_equipos serial NOT NULL,
@@ -219,6 +219,7 @@ values
     (13, 9),
     (14, 4),
     (15, 8),
+    (16,9),
     (3, 11),
     (4, 4),
     (2, 9),
@@ -396,7 +397,7 @@ on
 entradas
 for each row
 execute function estado_ubicacion();
- -- Creación de la tabla ordenes. Cada inserción representa una fabricación de un cosmético en la que se indica cantidad a fabricar. Se el asigna un lote y una fecha de caducidad en función de la "caducidad del cosmetico".
+ -- Creación de la tabla ordenes. Cada inserción representa una fabricación de un cosmético en la que se indica cantidad a fabricar. Se el asigna un lote y una fecha de caducidad "en función de la caducidad del cosmetico, esto todavía no lo hace".
 CREATE table
     ordenes (
         id_ordenes serial NOT NULL,
@@ -413,7 +414,7 @@ CREATE table
         CONSTRAINT fk2_ofab FOREIGN KEY (equipo_id_ordenes) REFERENCES equipos (id_equipos)
     );
 
-
+--Genera de forma automatica el lote y la fecha de caducidad de la orden
 CREATE OR REPLACE FUNCTION generar_fecha_caducidad_orden()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -443,31 +444,9 @@ insert into
 values
     ('2024-11-03', 1, 200, 4),
     ('2024-10-25', 2, 100, 3);
-/*
-CREATE TABLE
-    rel_ocm (
-        ord_id_ocm int NOT NULL,
-        cosmetico_id_ocm int not null,
-        mp_id_ocm int not null,
-        cantidad_cosm_mp_ocm decimal(10, 2),
-        constraint pk_ocm PRIMARY KEY (ord_id_ocm, cosmetico_id_ocm, mp_id_ocm),
-        constraint fk1_ocm FOREIGN KEY (ord_id_ocm) REFERENCES ordenes (id_ordenes),
-        constraint fk2_ocm FOREIGN KEY (cosmetico_id_ocm, mp_id_ocm) REFERENCES rel_cosm_mp (cosm_id_rcm, mp_id_rcm)
-    );
 
-INSERT INTO
-    rel_ocm (ord_id_ocm, cosmetico_id_ocm, mp_id_ocm)
-values
-    (1, 1, 1),
-    (1, 1, 2),
-    (1, 1, 3),
-    (1, 1, 13),
-    (1, 1, 7),
-    (1, 1, 11),
-    (1, 1, 12),
-    (1, 1, 15),
-    (1, 1, 10);
-*/
+
+-- Función para insertar automaticamente los datos en la tabla lotes_stock()
 create or replace
 function insertar_en_lotes_stock()
 returns trigger as $$
@@ -580,8 +559,8 @@ values
 '2028-11-02',
 12),
     ('2024-11-02',
-12,
-4,
+13,
+9,
 5000,
 '2028-11-02',
 13),
@@ -590,24 +569,179 @@ values
 4,
 5000,
 '2028-11-02',
-15),
+14),
 ('2024-11-02',
 15,
 8,
 5000,
 '2028-11-02',
+15),
+('2024-11-02',
+16,
+9,
+15000,
+'2028-11-02',
 16);
     
-   
-create table fabricacion(
+ --Creación de la tabla fabricación. Representa los datos de las materias primas empleadas en una orden de fabricación  
+create table detalle_o_fabricacion(
 
         orden_id_fab int not null,
         lote_id_fab int not null,
         mp_id_fab int not null,
-        cantidad_fab int not null,
+        cantidad_fab decimal(10,2) not null,
         constraint pk_fab primary key (orden_id_fab,
 lote_id_fab),
         constraint fk1_fab foreign key(orden_id_fab) references ordenes(id_ordenes),
         constraint fk2_fab foreign key(lote_id_fab) references lotes_stock(id_lotes_stock),
         constraint fk3_fab foreign key(mp_id_fab) references materias_primas(id_mps) 
     );
+
+-- La inserción de datos se debe hacer de forma automatica y también se debe descontar de la tabla lotes_stock las cantidades empleadas.
+--Hay que ve si es más fácil hacerlo mediante código o con funciones y trigger en la base de datos. Creo que lo segundo
+  
+   -- Función para insertar datos en detalle_o_fabricacion y descontar cantidades
+CREATE OR REPLACE FUNCTION insertar_detalle_o_fabricacion_y_descontar()
+RETURNS TRIGGER AS $$
+DECLARE
+    cosmetico_actual INTEGER;
+    materias_primas RECORD;
+    lote_disponible RECORD;
+    cantidad_necesaria DECIMAL(10,2);
+    cantidad_restante DECIMAL(10,2);
+BEGIN
+    -- Obtener el cosmético de la orden
+    SELECT cosmetico_id_ordenes INTO cosmetico_actual 
+    FROM ordenes 
+    WHERE id_ordenes = NEW.orden_id_fab;
+
+    -- Iterar sobre las materias primas del cosmético
+    FOR materias_primas IN 
+        SELECT mp_id_rcm, porcentaje_rcm 
+        FROM rel_cosm_mp 
+        WHERE cosm_id_rcm = cosmetico_actual
+    LOOP
+        -- Calcular la cantidad necesaria de la materia prima
+        cantidad_necesaria := (NEW.cantidad_fab * materias_primas.porcentaje_rcm) / 100;
+
+        -- Buscar lotes disponibles de la materia prima
+        FOR lote_disponible IN 
+            SELECT id_lotes_stock, cantidad_lotes_stock 
+            FROM lotes_stock 
+            WHERE mp_id_lotes_stock = materias_primas.mp_id_rcm 
+            AND cantidad_lotes_stock > 0 
+            ORDER BY fecha_caducidad_lotes_stock
+        LOOP
+            -- Determinar cuánto se puede tomar de este lote
+            IF lote_disponible.cantidad_lotes_stock >= cantidad_necesaria THEN
+                -- Insertar en detalle_o_fabricacion
+                INSERT INTO detalle_o_fabricacion (
+                    orden_id_fab, 
+                    lote_id_fab, 
+                    mp_id_fab, 
+                    cantidad_fab
+                ) VALUES (
+                    NEW.orden_id_fab,
+                    lote_disponible.id_lotes_stock,
+                    materias_primas.mp_id_rcm,
+                    cantidad_necesaria
+                );
+
+                -- Descontar de lotes_stock
+                UPDATE lotes_stock
+                SET cantidad_lotes_stock = cantidad_lotes_stock - cantidad_necesaria
+                WHERE id_lotes_stock = lote_disponible.id_lotes_stock;
+
+                EXIT;  -- Salir del bucle de lotes
+            ELSE
+                -- Insertar parcialmente
+                INSERT INTO detalle_o_fabricacion (
+                    orden_id_fab, 
+                    lote_id_fab, 
+                    mp_id_fab, 
+                    cantidad_fab
+                ) VALUES (
+                    NEW.orden_id_fab,
+                    lote_disponible.id_lotes_stock,
+                    materias_primas.mp_id_rcm,
+                    lote_disponible.cantidad_lotes_stock
+                );
+
+                -- Actualizar cantidad necesaria
+                cantidad_necesaria := cantidad_necesaria - lote_disponible.cantidad_lotes_stock;
+
+                -- Poner a cero el lote
+                UPDATE lotes_stock
+                SET cantidad_lotes_stock = 0
+                WHERE id_lotes_stock = lote_disponible.id_lotes_stock;
+            END IF;
+        END LOOP;
+
+        -- Verificar si se pudo obtener toda la cantidad necesaria
+        IF cantidad_necesaria > 0 THEN
+            RAISE EXCEPTION 'No hay suficiente cantidad de materia prima %', materias_primas.mp_id_rcm;
+        END IF;
+    END LOOP;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para ejecutar la función
+CREATE TRIGGER after_insert_detalle_o_fabricacion
+AFTER INSERT ON ordenes
+FOR EACH ROW
+EXECUTE FUNCTION insertar_detalle_o_fabricacion_y_descontar();
+   
+   
+  /*
+CREATE OR REPLACE FUNCTION insertar_detalle_o_fabricacion(p_orden_id INT, p_cosmetico_id INT)
+RETURNS VOID AS $$
+DECLARE
+    v_cantidad_necesaria NUMERIC;
+    v_cantidad_stock NUMERIC;
+BEGIN
+    -- Calcular la cantidad necesaria
+    SELECT 
+        o.cantidad_ordenes * rcm.porcentaje_rcm / 100,
+        ls.cantidad_lotes_stock
+    INTO v_cantidad_necesaria, v_cantidad_stock
+    FROM ordenes o
+        INNER JOIN cosmeticos c ON o.cosmetico_id_ordenes = c.id_cosmeticos
+        INNER JOIN rel_cosm_mp rcm ON c.id_cosmeticos = rcm.cosm_id_rcm
+        INNER JOIN materias_primas mp ON rcm.mp_id_rcm = mp.id_mps
+        INNER JOIN lotes_stock ls ON mp.id_mps = ls.mp_id_lotes_stock
+    WHERE o.id_ordenes = p_orden_id
+        AND c.id_cosmeticos = p_cosmetico_id
+    LIMIT 1;
+
+    -- Verificar si hay suficientes existencias
+    IF v_cantidad_stock >= v_cantidad_necesaria THEN
+        INSERT INTO detalle_o_fabricacion (
+            orden_id_fab,
+            lote_id_fab,
+            mp_id_fab,
+            cantidad_fab
+        )
+        SELECT DISTINCT
+            o.id_ordenes,
+            ls.id_lotes_stock,
+            ls.mp_id_lotes_stock,
+            v_cantidad_necesaria
+        FROM ordenes o
+            INNER JOIN cosmeticos c ON o.cosmetico_id_ordenes = c.id_cosmeticos
+            INNER JOIN rel_cosm_mp rcm ON c.id_cosmeticos = rcm.cosm_id_rcm
+            INNER JOIN materias_primas mp ON rcm.mp_id_rcm = mp.id_mps
+            INNER JOIN lotes_stock ls ON mp.id_mps = ls.mp_id_lotes_stock
+        WHERE o.id_ordenes = p_orden_id
+            AND c.id_cosmeticos = p_cosmetico_id
+            AND ls.cantidad_lotes_stock >= v_cantidad_necesaria
+        LIMIT 1;
+    ELSE
+        RAISE EXCEPTION 'No hay suficientes existencias en stock para fabricar esta orden.';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+*/ 
