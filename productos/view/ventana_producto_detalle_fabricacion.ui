@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="windowModality">
+   <enum>Qt::WindowModality::WindowModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1110</width>
+    <height>758</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Detalle Orden de Fabricación</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton{
+
+	
+	background-color: rgb(6, 191, 249);
+
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="2,8,0">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="lbl_fecha_dof">
+           <property name="text">
+            <string>Fecha</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lbl_cosmtico_dof">
+           <property name="text">
+            <string>Cosmético</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lbl_lote_dof">
+           <property name="text">
+            <string>Lote</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="lbl_caducidad_dof">
+           <property name="text">
+            <string>Caducidad</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="lbl_equipo_dof">
+           <property name="text">
+            <string>Equipo</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="le_fecha_dof"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="le_cosmetico_dof"/>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="le_lote_dof"/>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="le_cadudcidad_dof"/>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="le_equipo_dof"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lbl_cantidad_dof">
+           <property name="text">
+            <string>Cantidad</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="le_cantidad_dof"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QTableView" name="tv_dof">
+       <property name="sortingEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_imprimir_dof">
+       <property name="text">
+        <string>Imprmir</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_salir_dof">
+       <property name="text">
+        <string>Salir</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
