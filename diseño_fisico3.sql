@@ -599,7 +599,7 @@ lote_id_fab),
 
 -- La inserción de datos se debe hacer de forma automatica y también se debe descontar de la tabla lotes_stock las cantidades empleadas.
 --Hay que ve si es más fácil hacerlo mediante código o con funciones y trigger en la base de datos. Creo que lo segundo
-  
+  /*
    -- Función para insertar datos en detalle_o_fabricacion y descontar cantidades
 CREATE OR REPLACE FUNCTION insertar_detalle_o_fabricacion_y_descontar()
 RETURNS TRIGGER AS $$
@@ -692,7 +692,7 @@ CREATE TRIGGER after_insert_detalle_o_fabricacion
 AFTER INSERT ON ordenes
 FOR EACH ROW
 EXECUTE FUNCTION insertar_detalle_o_fabricacion_y_descontar();
-   
+   */
    
   /*
 CREATE OR REPLACE FUNCTION insertar_detalle_o_fabricacion(p_orden_id INT, p_cosmetico_id INT)
