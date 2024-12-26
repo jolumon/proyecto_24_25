@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'materias_primas_detalle3SVXYvf.ui'
+## Form generated from reading UI file 'materias_primas_detalle3UOlDjj.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.0
 ##
@@ -236,39 +236,38 @@ class Ui_Form(object):
 
         self.formLayout_2.setWidget(3, QFormLayout.FieldRole, self.cb_proveedor_entrada)
 
-        self.lbl_lote_entrada = QLabel(self.frame_form)
-        self.lbl_lote_entrada.setObjectName(u"lbl_lote_entrada")
-
-        self.formLayout_2.setWidget(4, QFormLayout.LabelRole, self.lbl_lote_entrada)
-
-        self.le_lote_entrada = QLineEdit(self.frame_form)
-        self.le_lote_entrada.setObjectName(u"le_lote_entrada")
-        self.le_lote_entrada.setClearButtonEnabled(True)
-
-        self.formLayout_2.setWidget(4, QFormLayout.FieldRole, self.le_lote_entrada)
-
         self.lbl_fecha_caducidad = QLabel(self.frame_form)
         self.lbl_fecha_caducidad.setObjectName(u"lbl_fecha_caducidad")
 
-        self.formLayout_2.setWidget(5, QFormLayout.LabelRole, self.lbl_fecha_caducidad)
+        self.formLayout_2.setWidget(4, QFormLayout.LabelRole, self.lbl_fecha_caducidad)
 
         self.de_f_caducidad = QDateEdit(self.frame_form)
         self.de_f_caducidad.setObjectName(u"de_f_caducidad")
         self.de_f_caducidad.setCalendarPopup(True)
         self.de_f_caducidad.setDate(QDate(2025, 1, 1))
 
-        self.formLayout_2.setWidget(5, QFormLayout.FieldRole, self.de_f_caducidad)
+        self.formLayout_2.setWidget(4, QFormLayout.FieldRole, self.de_f_caducidad)
 
         self.lbl_cantidad_entrada = QLabel(self.frame_form)
         self.lbl_cantidad_entrada.setObjectName(u"lbl_cantidad_entrada")
 
-        self.formLayout_2.setWidget(6, QFormLayout.LabelRole, self.lbl_cantidad_entrada)
+        self.formLayout_2.setWidget(5, QFormLayout.LabelRole, self.lbl_cantidad_entrada)
 
         self.le_cantidad_entrada = QLineEdit(self.frame_form)
         self.le_cantidad_entrada.setObjectName(u"le_cantidad_entrada")
         self.le_cantidad_entrada.setClearButtonEnabled(True)
 
-        self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.le_cantidad_entrada)
+        self.formLayout_2.setWidget(5, QFormLayout.FieldRole, self.le_cantidad_entrada)
+
+        self.lbl_ubicacion_entrada = QLabel(self.frame_form)
+        self.lbl_ubicacion_entrada.setObjectName(u"lbl_ubicacion_entrada")
+
+        self.formLayout_2.setWidget(6, QFormLayout.LabelRole, self.lbl_ubicacion_entrada)
+
+        self.comboBox = QComboBox(self.frame_form)
+        self.comboBox.setObjectName(u"comboBox")
+
+        self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.comboBox)
 
 
         self.verticalLayout_5.addLayout(self.formLayout_2)
@@ -334,13 +333,11 @@ class Ui_Form(object):
         self.lbl_codigo_entrada.setText(QCoreApplication.translate("Form", u"C\u00f3digo", None))
         self.lbl_nombre_entrada.setText(QCoreApplication.translate("Form", u"Nombre", None))
         self.lbl_proveedor_entrada.setText(QCoreApplication.translate("Form", u"Proveedor", None))
-        self.lbl_lote_entrada.setText(QCoreApplication.translate("Form", u"Lote", None))
-        self.le_lote_entrada.setText("")
-        self.le_lote_entrada.setPlaceholderText(QCoreApplication.translate("Form", u"Campo obligatorio", None))
         self.lbl_fecha_caducidad.setText(QCoreApplication.translate("Form", u"Fecha caducidad", None))
         self.de_f_caducidad.setDisplayFormat(QCoreApplication.translate("Form", u"d/M/yyyy", None))
         self.lbl_cantidad_entrada.setText(QCoreApplication.translate("Form", u"Cantidad", None))
         self.le_cantidad_entrada.setPlaceholderText(QCoreApplication.translate("Form", u"Campo obligatorio", None))
+        self.lbl_ubicacion_entrada.setText(QCoreApplication.translate("Form", u"Ubicaci\u00f3n", None))
         self.btn_cerrar_entrada.setText(QCoreApplication.translate("Form", u"Salir", None))
         self.btn_guardar_entrada.setText(QCoreApplication.translate("Form", u"Guardar", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_entrada), QCoreApplication.translate("Form", u"Nueva Entrada", None))

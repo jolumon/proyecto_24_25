@@ -74,7 +74,6 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
 
         self.cb_proveedor_nueva.setCurrentIndex(-1)
 
-
     #     #Nueva pestaña de materias primas
 
     #     # Crear un model de tabla
@@ -266,8 +265,7 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             codigo = self.model.data(self.model.index(id_pers_index.row(), 0))
 
             nombre = self.model.data(self.model.index(id_pers_index.row(), 1))
-            cantidad = self.model.data(
-                self.model.index(id_pers_index.row(), 2))
+            cantidad = self.ventana_detalle.obtener_cantidad_mp(codigo)
             # proveedor = self.model.index(fila, 3).data()
 
             # establecemos los campos con los valores seleccionados
@@ -281,7 +279,7 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             # self.ventana_detalle.le_cantidad_entrada.setText(str(cantidad))
             # self.ventana_detalle.le_proveedor_entrada.setText(str(proveedor))
             self.ventana_detalle.le_f_entrada.setText(
-                str(QDate.currentDate().toString('dd-MM-yyyy')))
+                str(QDate.currentDate().toString('dd/MM/yyyy')))
 
             self.query_productos = QSqlQuery()
             self.query_productos.prepare(
@@ -326,8 +324,6 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
                 where
                     mp.id_mps= {codigo}"""
             )
-            
-            
 
             self.model3.setHeaderData(0, Qt.Horizontal, str("Fecha Entrada"))
             self.model3.setHeaderData(1, Qt.Horizontal, str("Materia Prima"))
@@ -370,8 +366,7 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
                         mp.id_mps = {codigo}
                 """
             )
-            
-            
+
             self.model4.setHeaderData(0, Qt.Horizontal, str("Código"))
             self.model4.setHeaderData(1, Qt.Horizontal, str("Nombre"))
 
@@ -389,11 +384,10 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             self.ventana_detalle.tv_entradas_mp_det.resizeColumnsToContents()
             self.ventana_detalle.tv_provs_detalle_mp.horizontalHeader(
             ).setSectionResizeMode(QHeaderView.Stretch)
-            
-            
+
             # Modelo para listar los lotes de materia prima seleccionada
-            
-            self.model5=QSqlQueryModel()
+
+            self.model5 = QSqlQueryModel()
             self.model5.setQuery(
                 f""" 
                 select
@@ -410,12 +404,11 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
                 group by
                     mp.id_mps , mp.nombre_mps,ls.nombre_lotes_stock 
                 """)
-            
+
             self.model5.setHeaderData(0, Qt.Horizontal, str("Código"))
             self.model5.setHeaderData(1, Qt.Horizontal, str("Nombre"))
             self.model5.setHeaderData(2, Qt.Horizontal, str("Lote"))
             self.model5.setHeaderData(3, Qt.Horizontal, str("Cantidad / Kg"))
-            
 
             # Crear una vista de tabla
             self.ventana_detalle.tv_lotes_det.setModel(self.model5)
@@ -431,12 +424,6 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             self.ventana_detalle.tv_lotes_det.resizeColumnsToContents()
             self.ventana_detalle.tv_lotes_det.horizontalHeader(
             ).setSectionResizeMode(QHeaderView.Stretch)
-            
-            
-            
-            
-            
-            
 
             self.ventana_detalle.show()
 
@@ -512,9 +499,9 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             """
             select max(id_mps) from materias_primas
             """
-        )    
+        )
 # Crear la consulta
-       
+
         if query_ultimo_id_mps.exec_():
             # Avanzar al primer resultado
             if query_ultimo_id_mps.next():
@@ -524,11 +511,9 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             else:
                 print("No se encontraron resultados.")
         else:
-            print("Error al ejecutar la consulta:", query_ultimo_id_mps.lastError().text())
-                
-        
-        
-        
+            print("Error al ejecutar la consulta:",
+                  query_ultimo_id_mps.lastError().text())
+
         ####################################################################
         # Crear y preparacion de la sentencia sql para insertar en matprimas_proveedores
         query_insertar_rel_mps_pro = QSqlQuery()
