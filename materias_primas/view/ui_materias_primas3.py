@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'materias_primas3IEONTx.ui'
+## Form generated from reading UI file 'materias_primas3KVHgPL.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.0
 ##
@@ -72,6 +72,7 @@ class Ui_Form(object):
 
         self.btn_cerrar_listado_mp = QPushButton(self.tab_detalle_mp)
         self.btn_cerrar_listado_mp.setObjectName(u"btn_cerrar_listado_mp")
+        self.btn_cerrar_listado_mp.setStyleSheet(u"background-color: rgb(22, 183, 40);")
 
         self.horizontalLayout_4.addWidget(self.btn_cerrar_listado_mp)
 
@@ -193,7 +194,7 @@ class Ui_Form(object):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Materias Primas", None))
         self.le_buscar_mp.setPlaceholderText(QCoreApplication.translate("Form", u"Buscar por nombre...", None))
         self.btn_ver_detalle_mp.setText(QCoreApplication.translate("Form", u"Ver", None))
-        self.btn_cerrar_listado_mp.setText(QCoreApplication.translate("Form", u"Cerrar", None))
+        self.btn_cerrar_listado_mp.setText(QCoreApplication.translate("Form", u"Salir", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_detalle_mp), QCoreApplication.translate("Form", u"Materias primas", None))
         self.lbl_proveedor_nueva.setText(QCoreApplication.translate("Form", u"Proveedor", None))
         self.lbl_nombre_nueva.setText(QCoreApplication.translate("Form", u"Nombre", None))
