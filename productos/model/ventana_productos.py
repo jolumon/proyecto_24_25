@@ -3,6 +3,7 @@ from productos.model.ventana_detalle_prod import VentanaDetalle
 from PySide6.QtCore import Qt, QSortFilterProxyModel, QDate
 from PySide6.QtSql import QSqlTableModel, QSqlQuery, QSqlQueryModel, QSqlRelationalTableModel, QSqlRelation
 from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView, QTableView
+from auxiliares import VentanaFaltanDatos, VentanaValueError
 
 
 class VentanaProducto(QWidget, Ui_Form):
@@ -119,7 +120,8 @@ class VentanaProducto(QWidget, Ui_Form):
             cliente = self.model.data(
                 self.model.index(id_pers_index.row(), 3))
 
-            print(f'Cliente antes proxy-model:{cliente}')  # Este cliente es correcto
+            # Este cliente es correcto
+            print(f'Cliente antes proxy-model:{cliente}')
 
             # establecemos los campos con los valores seleccionados
             self.ventana_detalle.le_codigo_det.setText(str(codigo))
@@ -207,7 +209,8 @@ class VentanaProducto(QWidget, Ui_Form):
             self.ventana_detalle.le_buscar_fabricacion.textChanged.connect(
                 self.ventana_detalle.filter_fabricaciones)
 # Crear una vista de tabla
-            self.ventana_detalle.tv_fab_historico.setModel(self.proxy_model_fab)
+            self.ventana_detalle.tv_fab_historico.setModel(
+                self.proxy_model_fab)
 
             self.ventana_detalle.tv_fab_historico.setEditTriggers(
                 QAbstractItemView.NoEditTriggers)  # Deshabilitar edición
@@ -237,9 +240,24 @@ class VentanaProducto(QWidget, Ui_Form):
 
     def guardar_nuevo(self):
         # Recuperar datos de los lineEdit
-        nombre = self.le_nombre_prod.text()
-        fecha_cad = int(self.le_caducidad_prod.text())
-        cliente_id = int(self.obtener_clave_principal())
+        try:
+            nombre = self.le_nombre_prod.text()
+            if nombre=="":
+                raise Exception
+            fecha_cad = int(self.le_caducidad_prod.text())
+            cliente_id = int(self.obtener_clave_principal())
+        except ValueError as eV:
+            print(f"Exception:{eV}")            
+            ventana_error = VentanaValueError()
+            ventana_error.exec()
+            return
+        except Exception as e:
+            print(f"Exception:{e}")            
+            ventana_faltan_datos=VentanaFaltanDatos()
+            ventana_faltan_datos.exec()
+            return
+            
+            
 
         # Crear y preparacion de la sentencia sql
         query = QSqlQuery()
