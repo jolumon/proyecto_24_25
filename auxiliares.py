@@ -18,7 +18,8 @@ class VentanaEmergenteBorrar(QDialog):
         self.botones.rejected.connect(self.reject)
 
         self.layout.addWidget(self.botones)
-        
+
+
 class VentanaEmergenteVacio(QDialog):
     def __init__(self):
         super().__init__()
@@ -36,7 +37,8 @@ class VentanaEmergenteVacio(QDialog):
         # self.botones.rejected.connect(self.reject)
 
         self.layout.addWidget(self.botones)
-    
+
+
 class VentanaEmergenteFechaIncorrecta(QDialog):
     def __init__(self):
         super().__init__()
@@ -45,7 +47,8 @@ class VentanaEmergenteFechaIncorrecta(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.layout.addWidget(QLabel("La fecha de caducidad debe ser mayor que la fecha de entrada"))
+        self.layout.addWidget(
+            QLabel("La fecha de caducidad debe ser mayor que la fecha de entrada"))
 
         self.botones = QDialogButtonBox(
             QDialogButtonBox.Ok)
@@ -54,6 +57,7 @@ class VentanaEmergenteFechaIncorrecta(QDialog):
         # self.botones.rejected.connect(self.reject)
 
         self.layout.addWidget(self.botones)
+
 
 class VentanaEmergenteFaltaMPs(QDialog):
     def __init__(self):
@@ -63,7 +67,8 @@ class VentanaEmergenteFaltaMPs(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.layout.addWidget(QLabel("Falta algún componente de la composición"))
+        self.layout.addWidget(
+            QLabel("Falta algún componente de la composición"))
 
         self.botones = QDialogButtonBox(
             QDialogButtonBox.Ok)
@@ -72,7 +77,8 @@ class VentanaEmergenteFaltaMPs(QDialog):
         # self.botones.rejected.connect(self.reject)
 
         self.layout.addWidget(self.botones)
-        
+
+
 class VentanaMPExistente(QDialog):
     def __init__(self):
         super().__init__()
@@ -90,7 +96,8 @@ class VentanaMPExistente(QDialog):
         # self.botones.rejected.connect(self.reject)
 
         self.layout.addWidget(self.botones)
-        
+
+
 class VentanaFaltanDatos(QDialog):
     def __init__(self):
         super().__init__()
@@ -109,6 +116,7 @@ class VentanaFaltanDatos(QDialog):
 
         self.layout.addWidget(self.botones)
 
+
 class VentanaFaltaSeleccionarFila(QDialog):
     def __init__(self):
         super().__init__()
@@ -118,6 +126,65 @@ class VentanaFaltaSeleccionarFila(QDialog):
         self.setLayout(self.layout)
 
         self.layout.addWidget(QLabel("Falta seleccionar alguna fila"))
+
+        self.botones = QDialogButtonBox(
+            QDialogButtonBox.Ok)
+
+        self.botones.accepted.connect(self.accept)
+        # self.botones.rejected.connect(self.reject)
+
+        self.layout.addWidget(self.botones)
+
+
+class VentanaEntradaNoValida(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Atención")
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.layout.addWidget(
+            QLabel("Debes introducir el tipo dato correcto."))
+
+        self.botones = QDialogButtonBox(
+            QDialogButtonBox.Ok)
+
+        self.botones.accepted.connect(self.accept)
+        # self.botones.rejected.connect(self.reject)
+
+        self.layout.addWidget(self.botones)
+
+class VentanaValueError(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Atención")
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.layout.addWidget(
+            QLabel("Debes introducir un número."))
+
+        self.botones = QDialogButtonBox(
+            QDialogButtonBox.Ok)
+
+        self.botones.accepted.connect(self.accept)
+        # self.botones.rejected.connect(self.reject)
+
+        self.layout.addWidget(self.botones)
+
+
+class VentanaUbicacionNoDisponible(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Atención")
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.layout.addWidget(
+            QLabel("No hay ubicaciones libres. Contacta con el administrador"))
 
         self.botones = QDialogButtonBox(
             QDialogButtonBox.Ok)
