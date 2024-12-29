@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'materias_primas_detalle3UOlDjj.ui'
+## Form generated from reading UI file 'materias_primas_detalle3xcznmH.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.0
 ##
@@ -48,6 +48,7 @@ class Ui_Form(object):
 
         self.le_codigo_det = QLineEdit(self.tab_detalle)
         self.le_codigo_det.setObjectName(u"le_codigo_det")
+        self.le_codigo_det.setReadOnly(True)
 
         self.formLayout.setWidget(0, QFormLayout.FieldRole, self.le_codigo_det)
 
@@ -68,6 +69,7 @@ class Ui_Form(object):
 
         self.le_cantidad_det = QLineEdit(self.tab_detalle)
         self.le_cantidad_det.setObjectName(u"le_cantidad_det")
+        self.le_cantidad_det.setReadOnly(True)
 
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.le_cantidad_det)
 
@@ -168,6 +170,7 @@ class Ui_Form(object):
 
         self.btn_cerrar_det = QPushButton(self.tab_detalle)
         self.btn_cerrar_det.setObjectName(u"btn_cerrar_det")
+        self.btn_cerrar_det.setStyleSheet(u"background-color: rgb(22, 183, 40);")
 
         self.horizontalLayout.addWidget(self.btn_cerrar_det)
 
@@ -255,6 +258,7 @@ class Ui_Form(object):
 
         self.le_cantidad_entrada = QLineEdit(self.frame_form)
         self.le_cantidad_entrada.setObjectName(u"le_cantidad_entrada")
+        self.le_cantidad_entrada.setInputMethodHints(Qt.InputMethodHint.ImhDigitsOnly)
         self.le_cantidad_entrada.setClearButtonEnabled(True)
 
         self.formLayout_2.setWidget(5, QFormLayout.FieldRole, self.le_cantidad_entrada)
@@ -264,10 +268,10 @@ class Ui_Form(object):
 
         self.formLayout_2.setWidget(6, QFormLayout.LabelRole, self.lbl_ubicacion_entrada)
 
-        self.comboBox = QComboBox(self.frame_form)
-        self.comboBox.setObjectName(u"comboBox")
+        self.cb_ubicaciones_nueva_entrada = QComboBox(self.frame_form)
+        self.cb_ubicaciones_nueva_entrada.setObjectName(u"cb_ubicaciones_nueva_entrada")
 
-        self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.comboBox)
+        self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.cb_ubicaciones_nueva_entrada)
 
 
         self.verticalLayout_5.addLayout(self.formLayout_2)
@@ -287,6 +291,7 @@ class Ui_Form(object):
 
         self.btn_cerrar_entrada = QPushButton(self.frame_exterior)
         self.btn_cerrar_entrada.setObjectName(u"btn_cerrar_entrada")
+        self.btn_cerrar_entrada.setStyleSheet(u"background-color: rgb(22, 183, 40);")
 
         self.horizontalLayout_5.addWidget(self.btn_cerrar_entrada)
 
