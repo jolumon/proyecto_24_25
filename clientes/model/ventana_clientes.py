@@ -93,7 +93,8 @@ class VentanaCliente(QWidget, Ui_Form):
 
         # Recuperar datos de los lineEdit
         nombre = self.le_nombre.text()
-        if len(nombre) > 0:
+        if nombre.strip() != "":
+            # if len(nombre) > 0:
             direccion = self.le_direccion.text()
             codigo_postal = self.le_codigo_postal.text()
             poblacion = self.le_poblacion.text()
@@ -121,6 +122,7 @@ class VentanaCliente(QWidget, Ui_Form):
             query.exec()
 
             # Borrar datos introducidos
+
             self.le_nombre.setText("")
             self.le_direccion.setText("")
             self.le_codigo_postal.setText("")
@@ -185,7 +187,8 @@ class VentanaCliente(QWidget, Ui_Form):
             self.ventana_detalle.le_contacto.setText(contacto)
 
             self.query_productos = QSqlQuery()
-            self.query_productos.prepare("select cos.id_cosmeticos, cos.nombre_cosmeticos, cos.fecha_cad_cosmeticos, t.nombre_tipos from cosmeticos cos inner join clientes c on cos.cliente_id_cosmeticos=c.id_clientes inner join tipos t on cos.tipo_id_cosmeticos=t.id_tipos where cos.activo_cosmeticos=true and c.id_clientes=:codigo")
+            self.query_productos.prepare(
+                "select cos.id_cosmeticos, cos.nombre_cosmeticos, cos.fecha_cad_cosmeticos, t.nombre_tipos from cosmeticos cos inner join clientes c on cos.cliente_id_cosmeticos=c.id_clientes inner join tipos t on cos.tipo_id_cosmeticos=t.id_tipos where cos.activo_cosmeticos=true and c.id_clientes=:codigo")
             self.query_productos.bindValue(':codigo', codigo)
             self.query_productos.exec()
 
@@ -194,7 +197,8 @@ class VentanaCliente(QWidget, Ui_Form):
 
             self.model2.setHeaderData(0, Qt.Horizontal, str("Código"))
             self.model2.setHeaderData(1, Qt.Horizontal, str("Cosmético"))
-            self.model2.setHeaderData(2, Qt.Horizontal, str("Caducidad / meses"))
+            self.model2.setHeaderData(
+                2, Qt.Horizontal, str("Caducidad / meses"))
             self.model2.setHeaderData(3, Qt.Horizontal, str("Tipo"))
 
             # Crear una vista de tabla
