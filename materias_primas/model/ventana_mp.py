@@ -129,8 +129,8 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
 
         # Crear un cuadro de texto para la búsqueda
 
-        self.le_buscar_mp.setPlaceholderText("Buscar por nombre...")
-        self.le_buscar_mp.textChanged.connect(self.filter)
+        self.le_buscar_entrada_mp.setPlaceholderText("Buscar por nombre...")
+        self.le_buscar_entrada_mp.textChanged.connect(self.filter_ent_mp)
 
         # Crear una tabla para mostrar los datos
 
@@ -169,6 +169,22 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
         # Filtrar por la columna "nombre_persona"
         self.proxy_model_mp.setFilterKeyColumn(1)
         self.proxy_model_mp.invalidate()  # Asegurarse de que el proxy model se actualice
+        
+    def filter_ent_mp(self):
+        text = self.le_buscar_entrada_mp.text()
+        # Usar setFilterFixedString en lugar de setFilterRegExp
+        self.proxy_model_mp_ent.setFilterFixedString(text)
+        # Filtrar por la columna "nombre_persona"
+        self.proxy_model_mp_ent.setFilterKeyColumn(1)
+        self.proxy_model_mp_ent.invalidate()  # Asegurarse de que el proxy model se actualice
+    
+    def filter_ent_lote(self):
+        text = self.ventana_detalle.le_buscar_entrada.text()
+        # Usar setFilterFixedString en lugar de setFilterRegExp
+        self.proxy_model_lote_ent.setFilterFixedString(text)
+        # Filtrar por la columna "nombre_persona"
+        self.proxy_model_lote_ent.setFilterKeyColumn(2)
+        self.proxy_model_lote_ent.invalidate()  # Asegurarse de que el proxy model se actualice
 
     def ver_detalle_producto2(self):
 
@@ -246,15 +262,24 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             self.model3.setHeaderData(3, Qt.Horizontal, str("Fecha Caducidad"))
             self.model3.setHeaderData(4, Qt.Horizontal, str("Cantidad / g"))
             self.model3.setHeaderData(5, Qt.Horizontal, str("Proveedor"))
+            
+             # Crear un filtro para la búsqueda
+            self.proxy_model_lote_ent = QSortFilterProxyModel()
+            self.proxy_model_lote_ent.setSourceModel(self.model3)
+
+            # Crear un cuadro de texto para la búsqueda
+
+            self.ventana_detalle.le_buscar_entrada.setPlaceholderText("Buscar por lote...")
+            self.ventana_detalle.le_buscar_entrada.textChanged.connect(self.filter_ent_lote)
 
             # Crear una vista de tabla
-            self.ventana_detalle.tv_entradas_mp_det.setModel(self.model3)
-            self.ventana_detalle.tv_entradas_mp_det.setEditTriggers(
-                QAbstractItemView.NoEditTriggers)  # Deshabilitar edición
-            self.ventana_detalle.tv_entradas_mp_det.setSelectionMode(
-                QAbstractItemView.SingleSelection)  # Seleccionar filas completas
-            self.ventana_detalle.tv_entradas_mp_det.setSelectionBehavior(
-                QAbstractItemView.SelectRows)  # Seleccionar filas completas
+            self.ventana_detalle.tv_entradas_mp_det.setModel(self.proxy_model_lote_ent)
+            # self.ventana_detalle.tv_entradas_mp_det.setEditTriggers(
+            #     QAbstractItemView.NoEditTriggers)  # Deshabilitar edición
+            # self.ventana_detalle.tv_entradas_mp_det.setSelectionMode(
+            #     QAbstractItemView.SingleSelection)  # Seleccionar un único elemento
+            # self.ventana_detalle.tv_entradas_mp_det.setSelectionBehavior(
+            #     QAbstractItemView.SelectRows)  # Seleccionar filas completas
 
             # Configurar la vista de tabla
             self.ventana_detalle.tv_entradas_mp_det.resizeRowsToContents()

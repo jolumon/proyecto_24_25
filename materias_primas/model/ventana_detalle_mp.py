@@ -1,8 +1,9 @@
 from PySide6.QtSql import QSqlQuery, QSqlTableModel, QSqlQueryModel
 from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView, QMessageBox
 from materias_primas.view.ui_materias_primas_detalle3 import Ui_Form
-from PySide6.QtCore import Qt
-from auxiliares import VentanaEmergenteBorrar, VentanaFaltanDatos, VentanaEntradaNoValida, VentanaUbicacionNoDisponible
+from PySide6.QtCore import Qt, QDate
+from auxiliares import VentanaEmergenteBorrar, VentanaFaltanDatos, VentanaEntradaNoValida, VentanaUbicacionNoDisponible, VentanaFaltaSeleccionarFila
+from materias_primas.model.ventana_entrada_detalle import VentanaEntradaDetalle
 
 
 class VentanaDetalle(QWidget, Ui_Form):
@@ -81,6 +82,8 @@ class VentanaDetalle(QWidget, Ui_Form):
         self.btn_cerrar_det.clicked.connect(self.close)
         self.btn_borrar_det.clicked.connect(self.borrar_mp)
         self.btn_actualizar_det.clicked.connect(self.actualizar_det)
+        self.btn_modificar_entrada.clicked.connect(
+            self.lanzar_ventana_mod_entrada)
 
         # Signals and Slots pestaña entrada
 
@@ -268,8 +271,6 @@ class VentanaDetalle(QWidget, Ui_Form):
                 ls.mp_id_lotes_stock = :codigo 
         
         """
-
-
         )
         query_cantidad_mp.bindValue(":codigo", codigo_mp)
 
@@ -278,3 +279,37 @@ class VentanaDetalle(QWidget, Ui_Form):
                 cantidad_mp = query_cantidad_mp.value(0)
                 print(f"Cantidad_funcion:{cantidad_mp}")
                 return cantidad_mp
+
+    def lanzar_ventana_mod_entrada(self):
+        try:
+            selected_index = self.tv_entradas_mp_det.selectedIndexes()
+            if selected_index:
+                # Obtenemos el número de fila de la celda seleccionada
+                fila = selected_index[0].row()
+                id_pers_index = self.ventana_mp.proxy_model_lote_ent.mapToSource(
+                    selected_index[0])
+
+                fecha_cad = self.ventana_mp.model3.data(
+                    self.ventana_mp.model3.index(id_pers_index.row(), 3))
+                print(
+                    f"fecha_cad en lanzar_ventana_mod_entra: {fecha_cad}-{type(fecha_cad)}")
+
+                # Inicializa la ventana de detalles
+                self.ventana_modificar_entrada = VentanaEntradaDetalle(self)
+                self.ventana_modificar_entrada.show()
+
+                # Establece la fecha después de mostrar la ventana
+                self.ventana_modificar_entrada.de_fecha_cad_de.setDate(
+                    fecha_cad)
+
+                # Oculta la ventana principal
+                self.hide()
+                print("Fin de lanzar_ventana_mod_entrada")
+            else:
+                print("No se ha seleccionado ninguna entrada.")
+                ventana_error = VentanaFaltaSeleccionarFila()
+                ventana_error.exec()
+                return
+
+        except Exception as e:
+            print(f"Exception e: {e}")
