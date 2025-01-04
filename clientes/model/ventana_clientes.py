@@ -188,7 +188,7 @@ class VentanaCliente(QWidget, Ui_Form):
 
             self.query_productos = QSqlQuery()
             self.query_productos.prepare(
-                "select cos.id_cosmeticos, cos.nombre_cosmeticos, cos.fecha_cad_cosmeticos, t.nombre_tipos from cosmeticos cos inner join clientes c on cos.cliente_id_cosmeticos=c.id_clientes inner join tipos t on cos.tipo_id_cosmeticos=t.id_tipos where cos.activo_cosmeticos=true and c.id_clientes=:codigo")
+                "select cos.id_cosmeticos, cos.nombre_cosmeticos, cos.fecha_cad_cosmeticos, t.nombre_tipos from cosmeticos cos inner join clientes c on cos.cliente_id_cosmeticos=c.id_clientes left join tipos t on cos.tipo_id_cosmeticos=t.id_tipos where cos.activo_cosmeticos=true and c.id_clientes=:codigo")
             self.query_productos.bindValue(':codigo', codigo)
             self.query_productos.exec()
 
