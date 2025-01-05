@@ -16,6 +16,30 @@ class VentanaDetalle(QWidget, Ui_Form):
 
         self.showMaximized()
 
+# Mostrar tipos de productos en el comboBox
+        self.diccionario_tipo_prod = {}
+
+        query_tipo_prod = QSqlQuery()
+        query_tipo_prod.prepare(
+            """
+                select
+                    id_tipos ,
+                    nombre_tipos
+                from
+                    tipos
+                where
+                    activo_tipos = true
+                order by 
+                    nombre_tipos
+            """
+        )
+        if query_tipo_prod.exec():
+            while query_tipo_prod.next():
+                tipo_id = query_tipo_prod.value(0)
+                nombre_tipo = query_tipo_prod.value(1)
+                self.cb_tipo.addItem(nombre_tipo)
+                self.diccionario_tipo_prod[nombre_tipo] = tipo_id
+
         # Mostrar equipos en el comboBox
         self.diccionario_equipos = {}
 
@@ -260,6 +284,32 @@ class VentanaDetalle(QWidget, Ui_Form):
         nombre = self.le_nombre_det.text()
         caducidad = self.le_caducidad_det.text()
 
+        # Mostrar tipos de productos en el comboBox
+        self.diccionario_tipo_prod = {}
+
+        query_tipo_prod = QSqlQuery()
+        query_tipo_prod.prepare(
+            """
+                select
+                    id_tipos ,
+                    nombre_tipos
+                from
+                    tipos
+                where
+                    activo_tipos = true
+                order by 
+                    nombre_tipos
+            """
+        )
+        if query_tipo_prod.exec():
+            while query_tipo_prod.next():
+                tipo_id = query_tipo_prod.value(0)
+                nombre_tipo = query_tipo_prod.value(1)
+                self.cb_tipo.addItem(nombre_tipo)
+                self.diccionario_tipo_prod[nombre_tipo] = tipo_id
+
+        tipo_ids = self.obtener_clave_principal_tipo()
+
         # Mostrar clientes en el comboBox
         self.diccionario_clientes_act = {}
 
@@ -280,9 +330,10 @@ class VentanaDetalle(QWidget, Ui_Form):
 
         query_actualizar = QSqlQuery()
         query_actualizar.prepare(
-            f'update cosmeticos set nombre_cosmeticos=:nombre,fecha_cad_cosmeticos=:caducidad, cliente_id_cosmeticos=:cliente_id where id_cosmeticos = :codigo')
+            f'update cosmeticos set nombre_cosmeticos=:nombre,fecha_cad_cosmeticos=:caducidad,tipo_id_cosmeticos=:tipo_id, cliente_id_cosmeticos=:cliente_id where id_cosmeticos = :codigo')
         query_actualizar.bindValue(":nombre", nombre)
         query_actualizar.bindValue(":caducidad", caducidad)
+        query_actualizar.bindValue(":tipo_id", tipo_ids)
         query_actualizar.bindValue(":cliente_id", cliente_ids)
         query_actualizar.bindValue(":codigo", codigo)
 
@@ -297,7 +348,25 @@ class VentanaDetalle(QWidget, Ui_Form):
         # print(f'{type(nombre)}-{type(caducidad)}-{type(cliente_ids)}-{type(codigo)}')
 
         self.ventana_producto.initial_query.exec(
-            "select cos.id_cosmeticos,cos.nombre_cosmeticos , cos.fecha_cad_cosmeticos, c.nombre_clientes  from cosmeticos cos inner join clientes c on cos.cliente_id_cosmeticos =c.id_clientes  where cos.activo_cosmeticos=true order by cos.id_cosmeticos asc")
+            """
+                select
+                    c.id_cosmeticos,
+                    c.nombre_cosmeticos,
+                    c.fecha_cad_cosmeticos,
+                    t.nombre_tipos ,
+                    cli.nombre_clientes
+                from
+                    cosmeticos c
+                inner join clientes cli on
+                    c.cliente_id_cosmeticos = cli.id_clientes
+                inner join tipos t on
+                    c.tipo_id_cosmeticos = t.id_tipos 
+                where
+                    c.activo_cosmeticos = true
+                order by
+                    c.id_cosmeticos asc
+            """
+        )
 
         self.ventana_producto.model.setQuery(
             self.ventana_producto.initial_query)
@@ -625,3 +694,12 @@ class VentanaDetalle(QWidget, Ui_Form):
             ventana_falta_fila = VentanaFaltaSeleccionarFila()
             respuesta = ventana_falta_fila.exec()
             return
+    def obtener_clave_principal_tipo(self):
+        nombre_tipo_seleccionado = self.cb_tipo.currentText()
+        clave_principal_tipo = self.diccionario_tipo_prod.get(
+            nombre_tipo_seleccionado)
+
+        print(f'Tipo seleccionado: {nombre_tipo_seleccionado}')
+        print(f'Clave principal tipo: {clave_principal_tipo}')
+
+        return clave_principal_tipo

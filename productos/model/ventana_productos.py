@@ -20,7 +20,27 @@ class VentanaProducto(QWidget, Ui_Form):
 
         self.initial_query = QSqlQuery()
         self.initial_query.exec(
-            "select c.id_cosmeticos, c.nombre_cosmeticos,c.fecha_cad_cosmeticos, cli.nombre_clientes from cosmeticos c inner join clientes cli on c.cliente_id_cosmeticos =cli.id_clientes where c.activo_cosmeticos =true order by c.id_cosmeticos asc")
+            
+            """
+                select
+                    c.id_cosmeticos,
+                    c.nombre_cosmeticos,
+                    c.fecha_cad_cosmeticos,
+                    t.nombre_tipos ,
+                    cli.nombre_clientes
+                from
+                    cosmeticos c
+                inner join clientes cli on
+                    c.cliente_id_cosmeticos = cli.id_clientes
+                inner join tipos t on
+                    c.tipo_id_cosmeticos = t.id_tipos 
+                where
+                    c.activo_cosmeticos = true
+                order by
+                    c.id_cosmeticos asc
+            """
+            
+        )
         self.model = QSqlQueryModel()
         self.model.setQuery(self.initial_query)
 
@@ -29,7 +49,9 @@ class VentanaProducto(QWidget, Ui_Form):
         self.model.setHeaderData(1, Qt.Horizontal, str("Nombre"))
         self.model.setHeaderData(
             2, Qt.Horizontal, str("Fecha caducidad / meses"))
-        self.model.setHeaderData(3, Qt.Horizontal, str("Cliente"))
+        self.model.setHeaderData(
+            3, Qt.Horizontal, str("Tipo"))
+        self.model.setHeaderData(4, Qt.Horizontal, str("Cliente"))
 
         # Crear un filtro para la búsqueda
         self.proxy_model = QSortFilterProxyModel()
@@ -60,6 +82,31 @@ class VentanaProducto(QWidget, Ui_Form):
         self.tv_productos.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         self.tv_productos.selectRow(0)
+    # Mostrar tipos de productos en el comboBox
+        self.diccionario_tipo_prod = {}
+
+        query_tipo_prod = QSqlQuery()
+        query_tipo_prod.prepare(
+            """
+                select
+                    id_tipos ,
+                    nombre_tipos
+                from
+                    tipos
+                where
+                    activo_tipos = true
+                order by 
+                    nombre_tipos
+            """
+        )
+        if query_tipo_prod.exec():
+            while query_tipo_prod.next():
+                tipo_id = query_tipo_prod.value(0)
+                nombre_tipo = query_tipo_prod.value(1)
+                self.cb_tipo_prod.addItem(nombre_tipo)
+                self.diccionario_tipo_prod[nombre_tipo] = tipo_id
+
+        self.cb_tipo_prod.setCurrentIndex(-1)
 
     # Mostrar clientes en el comboBox
         self.diccionario_clientes = {}
@@ -117,17 +164,20 @@ class VentanaProducto(QWidget, Ui_Form):
             nombre = self.model.data(self.model.index(id_pers_index.row(), 1))
             fecha_cad = self.model.data(
                 self.model.index(id_pers_index.row(), 2))
-            cliente = self.model.data(
+            tipo = self.model.data(
                 self.model.index(id_pers_index.row(), 3))
+            print(f"Tipo:{tipo}")
+            cliente = self.model.data(
+                self.model.index(id_pers_index.row(), 4))
 
             # Este cliente es correcto
-            print(f'Cliente antes proxy-model:{cliente}')
+            # print(f'Cliente antes proxy-model:{cliente}')
 
             # establecemos los campos con los valores seleccionados
             self.ventana_detalle.le_codigo_det.setText(str(codigo))
             self.ventana_detalle.le_nombre_det.setText(nombre)
             self.ventana_detalle.le_caducidad_det.setText(str(fecha_cad))
-
+            self.ventana_detalle.cb_tipo.setCurrentText(tipo)
             self.ventana_detalle.cb_cliente.setCurrentText(cliente)
 
             self.query_composicion = QSqlQuery()
@@ -238,34 +288,44 @@ class VentanaProducto(QWidget, Ui_Form):
 
         return clave_principal
 
+    def obtener_clave_principal_tipo(self):
+        nombre_tipo_seleccionado = self.cb_tipo_prod.currentText()
+        clave_principal_tipo = self.diccionario_tipo_prod.get(
+            nombre_tipo_seleccionado)
+
+        print(f'Tipo seleccionado: {nombre_tipo_seleccionado}')
+        print(f'Clave principal tipo: {clave_principal_tipo}')
+
+        return clave_principal_tipo
+
     def guardar_nuevo(self):
         # Recuperar datos de los lineEdit
         try:
             nombre = self.le_nombre_prod.text()
-            if nombre=="":
+            if nombre == "":
                 raise Exception
             fecha_cad = int(self.le_caducidad_prod.text())
+            tipo = int(self.obtener_clave_principal_tipo())
             cliente_id = int(self.obtener_clave_principal())
         except ValueError as eV:
-            print(f"Exception:{eV}")            
+            print(f"Exception:{eV}")
             ventana_error = VentanaValueError()
             ventana_error.exec()
             return
         except Exception as e:
-            print(f"Exception:{e}")            
-            ventana_faltan_datos=VentanaFaltanDatos()
+            print(f"Exception:{e}")
+            ventana_faltan_datos = VentanaFaltanDatos()
             ventana_faltan_datos.exec()
             return
-            
-            
 
         # Crear y preparacion de la sentencia sql
         query = QSqlQuery()
         query.prepare(
-            f'insert into cosmeticos (nombre_cosmeticos,fecha_cad_cosmeticos,cliente_id_cosmeticos) values (:nombre, :caducidad,:cliente_id)')
+            f'insert into cosmeticos (nombre_cosmeticos,fecha_cad_cosmeticos,tipo_id_cosmeticos,cliente_id_cosmeticos) values (:nombre, :caducidad,:tipo,:cliente_id)')
 
         query.bindValue(":nombre", nombre)
         query.bindValue(":caducidad", fecha_cad)
+        query.bindValue(":tipo", tipo)
         query.bindValue(":cliente_id", cliente_id)
 
         query.exec()
@@ -273,10 +333,32 @@ class VentanaProducto(QWidget, Ui_Form):
         # Limpiar datos introducidos
         self.le_nombre_prod.setText("")
         self.le_caducidad_prod.setText("")
+        self.cb_tipo_prod.setCurrentIndex(-1)
         self.cb_cliente_prod.setCurrentIndex(-1)
         # Cambiar a la pestaña de listado productos
         self.tabWidget.setCurrentIndex(1)
 
         self.initial_query.exec(
-            "select c.id_cosmeticos,c.nombre_cosmeticos , c.fecha_cad_cosmeticos , cli.nombre_clientes  from cosmeticos c inner join clientes cli on c.cliente_id_cosmeticos =cli.id_clientes  where c.activo_cosmeticos =true order by c.id_cosmeticos asc")
+        """
+            select
+                c.id_cosmeticos,
+                c.nombre_cosmeticos,
+                c.fecha_cad_cosmeticos,
+                t.nombre_tipos ,
+                cli.nombre_clientes
+            from
+                cosmeticos c
+            inner join clientes cli on
+                c.cliente_id_cosmeticos = cli.id_clientes
+            inner join tipos t on
+                c.tipo_id_cosmeticos = t.id_tipos 
+            where
+                c.activo_cosmeticos = true
+            order by
+                c.id_cosmeticos asc
+        """
+        
+        
+        
+        )
         self.model.setQuery(self.initial_query)

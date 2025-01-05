@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'ventana_productosdYnlBU.ui'
+## Form generated from reading UI file 'ventana_productosqICLnT.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.0
 ##
@@ -61,12 +61,22 @@ class Ui_Form(object):
         self.lbl_cliente_prod = QLabel(self.tab_nuevo_producto)
         self.lbl_cliente_prod.setObjectName(u"lbl_cliente_prod")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.lbl_cliente_prod)
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.lbl_cliente_prod)
 
         self.cb_cliente_prod = QComboBox(self.tab_nuevo_producto)
         self.cb_cliente_prod.setObjectName(u"cb_cliente_prod")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.cb_cliente_prod)
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.cb_cliente_prod)
+
+        self.lbl_tipo_prod = QLabel(self.tab_nuevo_producto)
+        self.lbl_tipo_prod.setObjectName(u"lbl_tipo_prod")
+
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.lbl_tipo_prod)
+
+        self.cb_tipo_prod = QComboBox(self.tab_nuevo_producto)
+        self.cb_tipo_prod.setObjectName(u"cb_tipo_prod")
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.cb_tipo_prod)
 
 
         self.verticalLayout.addLayout(self.formLayout)
@@ -149,6 +159,7 @@ class Ui_Form(object):
         self.lbl_nombre_prod.setText(QCoreApplication.translate("Form", u"Nombre", None))
         self.lbl_fecha_cad_prod.setText(QCoreApplication.translate("Form", u"Caducidad", None))
         self.lbl_cliente_prod.setText(QCoreApplication.translate("Form", u"Cliente", None))
+        self.lbl_tipo_prod.setText(QCoreApplication.translate("Form", u"Tipo", None))
         self.btn_cancelar_nuevo.setText(QCoreApplication.translate("Form", u"Cancelar", None))
         self.btn_guardar_nuevo.setText(QCoreApplication.translate("Form", u"Guardar", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_nuevo_producto), QCoreApplication.translate("Form", u"Nuevo", None))

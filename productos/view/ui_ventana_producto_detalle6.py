@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'ventana_producto_detalle6yTOwhW.ui'
+## Form generated from reading UI file 'ventana_producto_detalle6ngOIrK.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.0
 ##
@@ -77,12 +77,22 @@ class Ui_Form(object):
         self.lbl_cliente_det = QLabel(self.tab_detalle)
         self.lbl_cliente_det.setObjectName(u"lbl_cliente_det")
 
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.lbl_cliente_det)
+        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.lbl_cliente_det)
 
         self.cb_cliente = QComboBox(self.tab_detalle)
         self.cb_cliente.setObjectName(u"cb_cliente")
 
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.cb_cliente)
+        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.cb_cliente)
+
+        self.lbl_tipo_det = QLabel(self.tab_detalle)
+        self.lbl_tipo_det.setObjectName(u"lbl_tipo_det")
+
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.lbl_tipo_det)
+
+        self.cb_tipo = QComboBox(self.tab_detalle)
+        self.cb_tipo.setObjectName(u"cb_tipo")
+
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.cb_tipo)
 
 
         self.verticalLayout_3.addLayout(self.formLayout)
@@ -297,6 +307,7 @@ class Ui_Form(object):
         self.lbl_nombre_det.setText(QCoreApplication.translate("Form", u"Nombre", None))
         self.lbl_caducidad_det.setText(QCoreApplication.translate("Form", u"Caducidad", None))
         self.lbl_cliente_det.setText(QCoreApplication.translate("Form", u"Cliente", None))
+        self.lbl_tipo_det.setText(QCoreApplication.translate("Form", u"Tipo", None))
         self.btn_actualizar_det.setText(QCoreApplication.translate("Form", u"Actualizar", None))
         self.btn_borrar_det.setText(QCoreApplication.translate("Form", u"Borrar", None))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_2), QCoreApplication.translate("Form", u"Composici\u00f3n", None))
