@@ -5,6 +5,8 @@ from PySide6.QtCore import Qt, QSortFilterProxyModel, QDate
 from materias_primas.view.ui_materias_primas3 import Ui_Form
 from materias_primas.model.ventana_detalle_mp import VentanaDetalle
 from auxiliares import VentanaEmergenteBorrar, VentanaMPExistente, VentanaFaltanDatos
+from PySide6.QtGui import QRegularExpressionValidator
+from PySide6.QtCore import QRegularExpression
 
 
 class VentanaMateriasPrimas(QWidget, Ui_Form):
@@ -16,6 +18,12 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
         self.showMaximized()
         self.ventana_principal = ventana_principal
 
+        #Limitar la entrada de números en el lineEdit de nueva materia prima
+        regex = QRegularExpression("^[A-Za-z ]*$")  # Solo letras y espacios
+        validator = QRegularExpressionValidator(regex, self.le_nombre_nueva)
+        # Establecer el validador en el QLineEdit
+        self.le_nombre_nueva.setValidator(validator)
+        
         # Crear un model de tabla
 
         self.initial_query = QSqlQuery()
@@ -376,6 +384,8 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
         return clave_principal
 
     def cambia_pestaña(self):
+        self.le_nombre_nueva.setText("")
+        self.cb_proveedor_nueva.setCurrentIndex(-1)
         self.tabWidget.setCurrentIndex(0)
 
     def closeEvent(self, event):

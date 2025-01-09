@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'materias_primas3KVHgPL.ui'
+## Form generated from reading UI file 'materias_primas3JuYdLb.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.0
 ##
@@ -32,6 +32,7 @@ class Ui_Form(object):
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.tabWidget = QTabWidget(Form)
         self.tabWidget.setObjectName(u"tabWidget")
+        self.tabWidget.setInputMethodHints(Qt.InputMethodHint.ImhPreferNumbers)
         self.tab_detalle_mp = QWidget()
         self.tab_detalle_mp.setObjectName(u"tab_detalle_mp")
         self.verticalLayout_2 = QVBoxLayout(self.tab_detalle_mp)
@@ -92,6 +93,7 @@ class Ui_Form(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.le_nombre_nueva = QLineEdit(self.tab_nuevo_mp)
         self.le_nombre_nueva.setObjectName(u"le_nombre_nueva")
+        self.le_nombre_nueva.setInputMethodHints(Qt.InputMethodHint.ImhNone)
         self.le_nombre_nueva.setClearButtonEnabled(True)
 
         self.gridLayout.addWidget(self.le_nombre_nueva, 0, 1, 1, 1)
@@ -108,6 +110,7 @@ class Ui_Form(object):
 
         self.cb_proveedor_nueva = QComboBox(self.tab_nuevo_mp)
         self.cb_proveedor_nueva.setObjectName(u"cb_proveedor_nueva")
+        self.cb_proveedor_nueva.setInputMethodHints(Qt.InputMethodHint.ImhDigitsOnly)
 
         self.gridLayout.addWidget(self.cb_proveedor_nueva, 1, 1, 1, 1)
 
@@ -196,6 +199,8 @@ class Ui_Form(object):
         self.btn_ver_detalle_mp.setText(QCoreApplication.translate("Form", u"Ver", None))
         self.btn_cerrar_listado_mp.setText(QCoreApplication.translate("Form", u"Salir", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_detalle_mp), QCoreApplication.translate("Form", u"Materias primas", None))
+        self.le_nombre_nueva.setInputMask("")
+        self.le_nombre_nueva.setText("")
         self.lbl_proveedor_nueva.setText(QCoreApplication.translate("Form", u"Proveedor", None))
         self.lbl_nombre_nueva.setText(QCoreApplication.translate("Form", u"Nombre", None))
         self.btn_cancelar_nueva_mp.setText(QCoreApplication.translate("Form", u"Cancelar", None))
