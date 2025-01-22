@@ -5,11 +5,11 @@ from materias_primas.model.ventana_mp import VentanaMateriasPrimas
 from proveedores.model.ventana_proveedores import VentanaProveedor
 from productos.model.ventana_productos import VentanaProducto
 from PySide6.QtWidgets import QMainWindow, QApplication
-from PySide6.QtGui import QCloseEvent
+from PySide6.QtGui import QCloseEvent, QPixmap, QPainter, QColor
 from PySide6.QtCore import Qt
-from ui_ventana_principal4 import Ui_MainWindow
+from PySide6 import QtCore
+from ui_ventana_principal5 import Ui_MainWindow
 from conexion_v3 import Conexion
-# from qt_material import apply_stylesheet
 
 
 class VentanaPrincipal(QMainWindow, Ui_MainWindow):
@@ -23,6 +23,39 @@ class VentanaPrincipal(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("Principal: labERP")
         self.showMaximized()
 
+        # self.label.setAlignment(QtCore.Qt.AlignCenter)  # Centra el texto
+
+        # Carga la imagen
+        original_pixmap = QPixmap(
+            "/home/jolumon/Documentos/proyecto_24_25/lab-1009190_1920.jpg")
+
+        # Ajusta el tamaño de la imagen
+        scaled_pixmap = original_pixmap.scaled(
+            875, 659, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+
+        # Crea un nuevo QPixmap con el mismo tamaño que la imagen escalada
+        result_pixmap = QPixmap(scaled_pixmap.size())
+
+        # Rellena con color transparente
+        result_pixmap.fill(QColor(0, 0, 0, 0))
+
+        # Dibuja la imagen y el texto en el nuevo QPixmap
+        painter = QPainter(result_pixmap)
+        painter.setOpacity(0.4)  # Ajusta la opacidad:1 opaco,0 transparente
+        painter.drawPixmap(0, 0, scaled_pixmap)
+
+        # Establece la fuente y el color del texto
+        painter.setOpacity(1.0)
+        painter.setPen(QColor(0, 0, 0, 255))  # Color del texto
+        painter.setFont(self.label.font())  # Usa la fuente del QLabel
+        painter.drawText(scaled_pixmap.rect(), QtCore.Qt.AlignCenter,
+                         "Bienvenido a labERP")  # Dibuja el texto centrado
+        painter.end()
+
+        # Establece el QPixmap resultante en el QLabel
+        self.label.setPixmap(result_pixmap)
+
+        # Conexión a la base de datos
         self.conexion = Conexion()
         self.conexion.conectar()
 
@@ -73,7 +106,6 @@ class VentanaPrincipal(QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':
     app = QApplication([])
-    # apply_stylesheet(app,theme="light_lightgreen.xml")
     ventana = VentanaPrincipal()
     ventana.show()
     sys.exit(app.exec())
