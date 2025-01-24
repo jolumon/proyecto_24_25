@@ -2,21 +2,34 @@ from PySide6.QtWidgets import QWidget, QTableView, QHeaderView, QAbstractItemVie
 
 from productos.view.ui_ventana_producto_detalle6 import Ui_Form
 from productos.model.ventana_fabricaciones_prod import VentanaFabricación
-from auxiliares import VentanaEmergenteBorrar, VentanaEmergenteFaltaMPs, VentanaFaltanDatos, VentanaFaltaSeleccionarFila
+from auxiliares import VentanaEmergenteBorrar, VentanaEmergenteFaltaMPs, VentanaFaltanDatos, VentanaFaltaSeleccionarFila, VentanaFaltas
 from PySide6.QtSql import QSqlQuery, QSqlQueryModel
 from PySide6.QtCore import Qt, QDate, QSortFilterProxyModel
+from validar_datos_entrada import set_validar_cantidad
 
 
 class VentanaDetalle(QWidget, Ui_Form):
+    """Clase que representa la ventana de detalle de un producto cosmético.
+    Hereda de QMainWindow para proporcionar una ventana y de
+    Ui_MainWindow para cargar la interfaz gráfica.
+
+     Args:
+        QWidget (QWidget): Clase base para todas las ventanas de la aplicación
+        Ui_Form (Ui_Form): Clase generada que define la interfaz gráfica de la ventana.
+    """
+
     def __init__(self, ventana_producto):
         super().__init__()
         self.setupUi(self)
 
         self.ventana_producto = ventana_producto
 
+        set_validar_cantidad(self.le_cantidad_fab)
+        set_validar_cantidad(self.le_caducidad_det)
+
         self.showMaximized()
 
-# Mostrar tipos de productos en el comboBox
+    # Mostrar tipos de productos en el comboBox
         self.diccionario_tipo_prod = {}
 
         query_tipo_prod = QSqlQuery()
@@ -83,11 +96,20 @@ class VentanaDetalle(QWidget, Ui_Form):
             self.ver_detalle_lote_fabricacion)
 
     def closeEvent(self, event):
-        # Cuando se cierra la ventana secundaria, se muestra la ventana principal
+        """
+        Maneja el evento del cierre de la ventana de detalle de productos cosméticos.
+        Cuando se cierra la ventana de detalle, se muestra la ventana de productos cosméticos.
+        Args:
+            event (QCloseEvent): El evento de cierre que contiene información sobre el 
+            cierre de la ventana.
+        """
         self.ventana_producto.show()
         event.accept()
 
     def borrar_producto(self):
+        """
+        Borra un proudcto cosmético de la base de datos.
+        """
         print(f'Borrado')
         ventana_confirmacion = VentanaEmergenteBorrar()
         respuesta = ventana_confirmacion.exec()
@@ -113,14 +135,15 @@ class VentanaDetalle(QWidget, Ui_Form):
             self.ventana_producto.tv_productos.selectRow(0)
 
     def add_fab(self):
+        """
+        Agrega una fabricación a la base de datos.
+        """
 
         if self.obtener_clave_principal_equipo() == None or self.le_cantidad_fab.text() == "":
             print("Faltan datos por introducir")
             ventana_faltan_datos = VentanaFaltanDatos()
             respuesta = ventana_faltan_datos.exec()
             return
-
-        # # print (f'Mostrar pesada: {self.mostrar_pesada()}')
 
         codigo = int(self.le_codigo_det.text())
         fecha_fab = QDate.currentDate()
@@ -137,9 +160,9 @@ class VentanaDetalle(QWidget, Ui_Form):
 
         if self.mostrar_pesada() == False:
             print("No se puede fabricar por falta de materias primas")
-            ventana_falta_mp = VentanaEmergenteFaltaMPs()
-            respuesta = ventana_falta_mp.exec()
-            self.mostrar_pesada()
+            # ventana_falta_mp = VentanaEmergenteFaltaMPs()
+            # respuesta = ventana_falta_mp.exec()
+            # self.mostrar_pesada()
 
             # self.close()
 
@@ -189,6 +212,13 @@ class VentanaDetalle(QWidget, Ui_Form):
             self.ventana_producto.tv_productos.selectRow(0)
 
     def mostrar_pesada(self):
+        """Muestra la pesada de las materis primas.
+
+        Returns:
+            boolean: Devuelve True si tiene todas las materias primas para la orden de fabricación
+            Devuelve False en caso contrario.
+        """
+
         if self.le_cantidad_fab.text() == "":
             print("Falta introducir la cantidad a fabricar")
             ventana_faltan_datos = VentanaFaltanDatos()
@@ -199,12 +229,8 @@ class VentanaDetalle(QWidget, Ui_Form):
             codigo = int(self.le_codigo_det.text())
             cantidad = int(self.le_cantidad_fab.text())
 
-            # print(f'Código despues del else: {codigo}')
-            # print(f'Cantidad despues del else: {cantidad}')
-
             # Crear un model de tabla
             self.weight_query = QSqlQuery()
-            # self.weight_query.prepare("select ls.mp_id_lotes_stock,	mp.nombre_mps,:cantidad * rcm.porcentaje_rcm / 100,ls.cantidad_lotes_stock,	ls.nombre_lotes_stock ,ls.cantidad_lotes_stock - :cantidad * rcm.porcentaje_rcm / 100 from lotes_stock ls inner join materias_primas mp on ls.mp_id_lotes_stock = mp.id_mps inner join rel_cosm_mp rcm on mp.id_mps = rcm.mp_id_rcm where rcm.cosm_id_rcm = :id_prod_fab order by mp_id_lotes_stock")
             self.weight_query.prepare("""
                                          select ls.mp_id_lotes_stock as "Código",
                                                  mp.nombre_mps as "Nombre",
@@ -220,36 +246,25 @@ class VentanaDetalle(QWidget, Ui_Form):
             self.weight_query.bindValue(":cosmetico", codigo)
             self.weight_query.bindValue(":cantidad", cantidad)
             if self.weight_query.exec():
-                # print("Dentro del if de mostrar_pesada")
 
                 todo_true = True
-
-                while self.weight_query.next() and todo_true:
-                    # print("Dentro del while")
+                contador = 0
+                lista_faltas = []
+                while self.weight_query.next():  # and todo_true:
 
                     prueba_id_mp = self.weight_query.value(0)
                     prueba_nombre = self.weight_query.value(1)
                     calculado = self.weight_query.value(2)
                     cantidad_mp = self.weight_query.value(3)
-                    # prueba_lote_mp = self.weight_query.value(4)
-                    # prueba_restante = self.weight_query.value(5)
-
+                    cantidad_diferencia = calculado-cantidad_mp
                     if cantidad_mp < calculado:
-                        todo_true = False
-                        # Si falta más de un producto no avisaría
-                        print("Enviando email al departamento de compras")
-            # print(todo_true)
-            # No es necesario seguir iterando si ya encontramos un caso donde no se cumple la condición
-
-            # print("Fin del while")
+                        contador += 1
+                        lista_faltas.append(
+                            (prueba_nombre, cantidad_diferencia))
 
             self.weigth_model = QSqlQueryModel()
             self.weigth_model.setQuery(self.weight_query)
 
-            # cabeceras_pesada = ['Código', 'Materia Prima', 'Lote',
-            #                     'Stock / kg', 'Cantidad Necesaria / kg', 'Suficiente Materia Prima']
-            # cabeceras_pesada = [
-            #     'Código', 'Materia Prima', 'Necesario / g', 'Stock / kg', 'Lote', 'Restante / g']
             cabeceras_pesada = [
                 'Código', 'Materia Prima', 'Necesario / g', 'Stock / kg']
             for i, cabecera in enumerate(cabeceras_pesada):
@@ -266,19 +281,28 @@ class VentanaDetalle(QWidget, Ui_Form):
             self.tv_detalle_new_fab.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
             self.tv_detalle_new_fab.show()
-
+        if contador > 0:
+            todo_true = False
+            ventana_faltas = VentanaFaltas(lista_faltas)
+            ventana_faltas.exec()
+            print(f"{lista_faltas}")
         return todo_true
 
     def obtener_clave_principal_equipo(self):
+        """Función para obtener la clave principal del equipo utilizado en la fabricación.
+
+        Returns:
+            int: Entero que representa el id del equipo
+        """
         nombre_seleccionado = self.cb_equipo_fab.currentText()
         clave_principal = self.diccionario_equipos.get(nombre_seleccionado)
-
-        print(f'Nombre seleccionado: {nombre_seleccionado}')
-        print(f'Clave principal: {clave_principal}')
 
         return clave_principal
 
     def actualizar_producto(self):
+        """
+        Función para actualizar el producto seleccionado.
+        """
 
         codigo = int(self.le_codigo_det.text())
         nombre = self.le_nombre_det.text()
@@ -324,8 +348,6 @@ class VentanaDetalle(QWidget, Ui_Form):
                 self.cb_cliente.addItem(nombre_cli)
                 self.diccionario_clientes_act[nombre_cli] = cliente_id
 
-        # cliente = self.cb_cliente.currentText()
-
         cliente_ids = int(self.obtener_clave_principal())
 
         query_actualizar = QSqlQuery()
@@ -338,14 +360,6 @@ class VentanaDetalle(QWidget, Ui_Form):
         query_actualizar.bindValue(":codigo", codigo)
 
         query_actualizar.exec()
-
-        # print(f'Nombre:{nombre}')
-        # print(f'Caducidad:{caducidad}')
-        # print(f'Cliente_ids:{cliente_ids}')
-        # print(f'Cliente_id:{cliente_id}')
-        # print(f'Código: {codigo}')
-
-        # print(f'{type(nombre)}-{type(caducidad)}-{type(cliente_ids)}-{type(codigo)}')
 
         self.ventana_producto.initial_query.exec(
             """
@@ -378,23 +392,30 @@ class VentanaDetalle(QWidget, Ui_Form):
         print(f'Actualizado')
 
     def obtener_clave_principal(self):
+        """
+        Obtiene la clave principal del cliente seleccionado en el combobox
+
+        Returns:
+            int: Representa la id del cliente seleccionado en el combobox.
+        """
         nombre_seleccionado = self.cb_cliente.currentText()
         clave_principal = self.diccionario_clientes_act.get(
             nombre_seleccionado)
 
-        print(f'Nombre seleccionado: {nombre_seleccionado}')
-        print(f'Clave principal: {clave_principal}')
-
         return clave_principal
 
-    def imprimir_fab(self):
-        print('Impresión realizada')
-
     def add_datos_o_fabricacion(self, cosmetico, cantidad):
+        """Añade los datos de las materias primas utilizadas en la orden de fabricación 
+        dados el producto cosmético y la cantidad a fabricar.
+
+        Args:
+            cosmetico (int): Representa el id del producto cosmético de la orden de fabricación.
+            cantidad (int): Representa la cantidad a fabricar en la orden de fabricación.
+        """
 
         datos_stock = []
         # codigo = int(self.le_codigo_det.text()) #No haría falta, se lo paso como parametro a la función
-
+        # Obtengo el stock de las materias primas del cosmético
         stock_query = QSqlQuery()
         stock_query.prepare("""select ls.mp_id_lotes_stock as "Código",
                                       mp.nombre_mps as "Nombre",
@@ -424,7 +445,7 @@ class VentanaDetalle(QWidget, Ui_Form):
                 f"Código: {mp['codigo_stock']},Nombre:{mp['nombre_stock']},Cantidad:{mp['cantidad_stock']}")
 
         datos_necesario = []
-
+        # Obtengo la cantidad necesaria de las materias primas para poder fabricar la cantidad de la orden.
         necesario_query = QSqlQuery()
         necesario_query.prepare("""select mp.id_mps,
                                           :cantidad * porcentaje_rcm / 100 as "Necesario"
@@ -450,11 +471,16 @@ class VentanaDetalle(QWidget, Ui_Form):
             print(
                 f"Código: {mp_necesario['id_mps']},Cantidad:{mp_necesario['cantidad_mps']}")
 
-# """
-# ######################################################################################
-# #Añadir datos a la tabla detalle_o_fabricacion
-
     def calcular_fecha_cad(self, fecha_fab, cosmetico):
+        """Dada una fecha de fabricación y un cosmético calcula la fecha de caducidad del mismo.
+
+        Args:
+            fecha_fab (date): Representa la fecha de fabricación
+            cosmetico (int): Representa la clave principal del producto cosmético.
+
+        Returns:
+            date: Devuelve la fecha de caducidad.
+        """
         query_caducidad = QSqlQuery()
         query_caducidad.prepare(
             "select c.fecha_cad_cosmeticos from cosmeticos c where c.id_cosmeticos = :codigo")
@@ -469,6 +495,11 @@ class VentanaDetalle(QWidget, Ui_Form):
         return fecha_caducidad
 
     def get_last_batch(self):
+        """Obtiene el último lote fabricado.
+
+        Returns:
+            str: Devuelve el último lote.
+        """
         query_lote = QSqlQuery()
         query_lote.prepare(
             "select max(lote_ordenes) from ordenes ")
@@ -476,7 +507,6 @@ class VentanaDetalle(QWidget, Ui_Form):
             if query_lote.next():  # Mueve al primer resultado
                 # Obtiene el valor del primer campo
                 last_lote = query_lote.value(0)
-                print(f'Last lote: {last_lote}')
                 # Generar el nuevo lote
                 if last_lote.startswith('OF'):
                     # Obtener la parte numérica
@@ -486,10 +516,14 @@ class VentanaDetalle(QWidget, Ui_Form):
                     new_lote = "OF1"  # Si no hay lotes, empezar con OF1
             else:
                 new_lote = "OF1"  # Si no hay registros, iniciar con OF1
-            print(f'Number_part:{number_part}')
         return new_lote
 
     def get_last_order(self):
+        """Obtiene id de la última fabricación
+
+        Returns:
+            int: Representa un entero que es la clave principal de la ultima orden de fabricación.
+        """
         query_last_order = QSqlQuery()
         query_last_order.prepare(
             "SELECT MAX(id_ordenes) FROM ordenes")
@@ -499,6 +533,12 @@ class VentanaDetalle(QWidget, Ui_Form):
         return last_order_id
 
     def actualiza_stock(self, cantidad, cosmetico):
+        """Actualiza el stock de materias primas para la fabricación de un cosmético.
+
+        Args:
+            cantidad: Cantidad de cosmético a fabricar.
+            cosmetico: ID del cosmético.
+        """
 
         obtener_mps_cosmetico = QSqlQuery()
         obtener_mps_cosmetico.prepare(
@@ -524,10 +564,10 @@ class VentanaDetalle(QWidget, Ui_Form):
                         necesario = int(query_necesario.value(0))
                         print(f"Necesario: {necesario}")
 
-                cantidad_mp_orden = necesario
+                # cantidad_mp_orden = necesario
                 query_lotes_mp = QSqlQuery()
                 query_lotes_mp.prepare(
-                    "select * from lotes_stock ls where ls.mp_id_lotes_stock =:mp order by id_lotes_stock asc")
+                    "select * from lotes_stock ls where ls.mp_id_lotes_stock =:mp and ls.cantidad_lotes_stock>0 order by id_lotes_stock asc")
                 query_lotes_mp.bindValue(":mp", mp)
 
                 falta = True
@@ -538,13 +578,19 @@ class VentanaDetalle(QWidget, Ui_Form):
                         # print("Estoy en el while")
                         if query_lotes_mp.value(2) >= necesario:
                             # print("Estoy en el if query_lotes_mp.value(2) >= necesario")
+                            introducido = necesario
                             restante = query_lotes_mp.value(2)-necesario
-
+                            print(f"Introducido{introducido}")
+                            print(f"Necesario{necesario}")
+                            # cantidad_mp_orden = necesario
                             falta = False
 
                         else:
                             restante = 0
-                            necesario = necesario-query_lotes_mp.value(2)
+                            introducido = query_lotes_mp.value(2)
+                            necesario = necesario - query_lotes_mp.value(2)
+                            print(f"Introducido{introducido}")
+                            print(f"Necesario{necesario}")
 
                         actualiza_cantidad_lote = QSqlQuery()
                         actualiza_cantidad_lote.prepare("""
@@ -556,18 +602,18 @@ class VentanaDetalle(QWidget, Ui_Form):
                             ":id_lotes_stock", id_lotes)
                         actualiza_cantidad_lote.exec()
 
-                        self.add_detalle_o_fab(id_lotes, mp, cantidad_mp_orden)
-
-                # también tiene que insertar los datos en detalle_o_fabricacion
+                        self.add_detalle_o_fab(id_lotes, mp, introducido)
 
     def add_detalle_o_fab(self, lote_id_mp, mp_id, cantidad_mp):
+        """Inserta datos de la materia prima empleada en la fabricación.
+
+        Args:
+            lote_id_mp (int): id del lote
+            mp_id (int): id de la materia prima
+            cantidad_mp (int): Representa la cantidad de la materia prima.
+        """
 
         orden_id_fab = self.get_last_order()
-
-        print(f"Orden Id:{orden_id_fab}")
-        print(f"Lote Id:{lote_id_mp}")
-        print(f"Id mp:{mp_id}")
-        print(f"Cantidad:{cantidad_mp}")
 
         query_add_detall_fab = QSqlQuery()
         query_add_detall_fab.prepare(
@@ -580,6 +626,9 @@ class VentanaDetalle(QWidget, Ui_Form):
         query_add_detall_fab.exec()
 
     def filter_fabricaciones(self):
+        """
+        Filtra las fabricaciones por LOTE.
+        """
         text = self.le_buscar_fabricacion.text()
         # Usar setFilterFixedString en lugar de setFilterRegExp
         self.ventana_producto.proxy_model_fab.setFilterFixedString(text)
@@ -589,19 +638,16 @@ class VentanaDetalle(QWidget, Ui_Form):
         self.ventana_producto.proxy_model_fab.invalidate()
 
     def ver_detalle_lote_fabricacion(self):
-        print(f"Viendo detalle de la fabricación...")
+        """Muestra el detalle de la fabricación del lote seleccionado."""
 
         fila_seleccionada = self.tv_fab_historico.selectedIndexes()
 
-        print(f"Fila seleccionada: {fila_seleccionada}")
         if fila_seleccionada:
             self.ventana_dof = VentanaFabricación(self)
             row = fila_seleccionada[0].row()
-            print(f"Fila: {row}")
 
             id_pers_index = self.ventana_producto.proxy_model_fab.mapToSource(
                 fila_seleccionada[0])
-            print(f"id_pers_index:{id_pers_index}")
             id_orden = self.ventana_producto.model_fab.data(
                 self.ventana_producto.model_fab.index(id_pers_index.row(), 0))
             fecha = self.ventana_producto.model_fab.data(
@@ -616,12 +662,6 @@ class VentanaDetalle(QWidget, Ui_Form):
             caducidad_str = caducidad.toString("dd/MM/yyyy")
             equipo = self.ventana_producto.model_fab.data(
                 self.ventana_producto.model_fab.index(id_pers_index.row(), 5))
-
-            print(f"id_orden:{id_orden}")
-            print(f"Fecha:{fecha_str}")
-            print(f"CAntidad: {cantidad}")
-            print(f"Lote: {lote}")
-            print(f"Caducidad: {caducidad_str}")
 
             self.ventana_dof.le_fecha_dof.setText(fecha_str)
             self.ventana_dof.le_cosmetico_dof.setText(
@@ -660,7 +700,7 @@ class VentanaDetalle(QWidget, Ui_Form):
             self.model_dof = QSqlQueryModel()
             self.model_dof.setQuery(self.datos_orden_query)
 
-        # Cabeceras
+            # Cabeceras
             self.model_dof.setHeaderData(0, Qt.Horizontal, str("Código"))
             self.model_dof.setHeaderData(1, Qt.Horizontal, str("Nombre"))
             self.model_dof.setHeaderData(
@@ -694,7 +734,14 @@ class VentanaDetalle(QWidget, Ui_Form):
             ventana_falta_fila = VentanaFaltaSeleccionarFila()
             respuesta = ventana_falta_fila.exec()
             return
+
     def obtener_clave_principal_tipo(self):
+        """Obtiene el id de tipo de producto cosmético.
+
+        Returns:
+            int: Id del tipo de cosmético
+        """
+        
         nombre_tipo_seleccionado = self.cb_tipo.currentText()
         clave_principal_tipo = self.diccionario_tipo_prod.get(
             nombre_tipo_seleccionado)

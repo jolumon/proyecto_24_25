@@ -4,9 +4,19 @@ from PySide6.QtCore import Qt, QSortFilterProxyModel, QDate
 from PySide6.QtSql import QSqlTableModel, QSqlQuery, QSqlQueryModel, QSqlRelationalTableModel, QSqlRelation
 from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView, QTableView
 from auxiliares import VentanaFaltanDatos, VentanaValueError
+from validar_datos_entrada import set_validar_cantidad
 
 
 class VentanaProducto(QWidget, Ui_Form):
+    """ Clase que representa la ventana de productos cosméticos.
+    Hereda de QMainWindow para proporcionar una ventana y de
+    Ui_MainWindow para cargar la interfaz gráfica.
+
+     Args:
+        QWidget (QWidget): Clase base para todas las ventanas de la aplicación
+        Ui_Form (Ui_Form): Clase generada que define la interfaz gráfica de la ventana.
+    """
+
     def __init__(self, ventana_principal):
         super().__init__()
 
@@ -16,11 +26,13 @@ class VentanaProducto(QWidget, Ui_Form):
         self.showMaximized()
         self.ventana_principal = ventana_principal
 
+        set_validar_cantidad(self.le_caducidad_prod)
+
         # Crear un modelo de tabla
 
         self.initial_query = QSqlQuery()
         self.initial_query.exec(
-            
+
             """
                 select
                     c.id_cosmeticos,
@@ -39,7 +51,7 @@ class VentanaProducto(QWidget, Ui_Form):
                 order by
                     c.id_cosmeticos asc
             """
-            
+
         )
         self.model = QSqlQueryModel()
         self.model.setQuery(self.initial_query)
@@ -134,27 +146,42 @@ class VentanaProducto(QWidget, Ui_Form):
         self.btn_guardar_nuevo.clicked.connect(self.guardar_nuevo)
 
     def cambia_pestaña(self):
+        """
+        Cambia la pestaña a la de listado de productos
+        """
         self.tabWidget.setCurrentIndex(1)
 
     def closeEvent(self, event):
-        # Cuando se cierra la ventana secundaria, se muestra la ventana principal
+        """
+        Maneja el evento del cierre de la ventana.
+        Cuando se cierra la ventana de productos, se muestra la ventana principal
+        Args:
+            event (QCloseEvent): El evento de cierre que contiene información sobre el 
+            cierre de la ventana.
+        """
         self.ventana_principal.show()
         event.accept()
 
     def filter(self):
+        """
+        Filtra los productos en la tabla de listado de productos
+        """
         text = self.le_buscar_prod.text()
         # Usar setFilterFixedString en lugar de setFilterRegExp
         self.proxy_model.setFilterFixedString(text)
-        # Filtrar por la columna "nombre_persona"
+        # Filtrar por la columna productos
         self.proxy_model.setFilterKeyColumn(1)
         self.proxy_model.invalidate()  # Asegurarse de que el proxy model se actualice
 
     def ver_detalle_producto(self):
+        """
+        Muestra el detalle del producto  seleccionado en la tabla de productos.
+        """
+
         # Se crea la ventana de detalle del producto
         self.ventana_detalle = VentanaDetalle(self)
         selected_index = self.tv_productos.selectedIndexes()
 
-        # print(f'Selected index: {selected_index}')
         if selected_index:
 
             row = selected_index[0].row()
@@ -170,9 +197,6 @@ class VentanaProducto(QWidget, Ui_Form):
             cliente = self.model.data(
                 self.model.index(id_pers_index.row(), 4))
 
-            # Este cliente es correcto
-            # print(f'Cliente antes proxy-model:{cliente}')
-
             # establecemos los campos con los valores seleccionados
             self.ventana_detalle.le_codigo_det.setText(str(codigo))
             self.ventana_detalle.le_nombre_det.setText(nombre)
@@ -187,14 +211,11 @@ class VentanaProducto(QWidget, Ui_Form):
             self.query_composicion.bindValue(':codigo', codigo)
             self.query_composicion.exec()
 
-            # self.model2 = QSqlRelationalTableModel()
-
             self.model2 = QSqlQueryModel()
             self.model2.setQuery(self.query_composicion)
 
             self.model2.setHeaderData(0, Qt.Horizontal, str("Materia Prima"))
             self.model2.setHeaderData(1, Qt.Horizontal, str("Porcentaje"))
-            # self.model2.setHeaderData(2, Qt.Horizontal, str("Linea"))
 
             # Crear una vista de tabla
             self.ventana_detalle.tv_composicion_prod.setModel(self.model2)
@@ -233,8 +254,6 @@ class VentanaProducto(QWidget, Ui_Form):
                 where c.id_cosmeticos=:codigo""")
             self.query_fabricaciones.bindValue(':codigo', codigo)
             self.query_fabricaciones.exec()
-#                select f.fecha_fab ,f.lote_fab ,f.cantidad_fab  ,f.fecha_cad_fab,e.nombre_eq  from productos p inner join fabricaciones f on p.id_prod = f.id_prod_fab inner join equipos e on f.equipo_fab = e.id_eq where p.id_prod = 1 order by f.fecha_fab desc
-            # self.model2 = QSqlRelationalTableModel()
 
             self.model_fab = QSqlQueryModel()
             self.model_fab.setQuery(self.query_fabricaciones)
@@ -258,7 +277,7 @@ class VentanaProducto(QWidget, Ui_Form):
                 "Buscar por lote fabricación...")
             self.ventana_detalle.le_buscar_fabricacion.textChanged.connect(
                 self.ventana_detalle.filter_fabricaciones)
-# Crear una vista de tabla
+            # Crear una vista de tabla
             self.ventana_detalle.tv_fab_historico.setModel(
                 self.proxy_model_fab)
 
@@ -280,25 +299,35 @@ class VentanaProducto(QWidget, Ui_Form):
             self.hide()
 
     def obtener_clave_principal(self):
+        """
+        Devuelve la clave principal del cliente seleccionad en el combobox
+
+        Returns:
+            int: Entero que representa la clave principal del cliente
+        """
         nombre_seleccionado = self.cb_cliente_prod.currentText()
         clave_principal = self.diccionario_clientes.get(nombre_seleccionado)
-
-        print(f'Nombre seleccionado: {nombre_seleccionado}')
-        print(f'Clave principal: {clave_principal}')
 
         return clave_principal
 
     def obtener_clave_principal_tipo(self):
+        """
+        Devuelve la clave principal del tipo de producto seleccionado en el combobox
+
+        Returns:
+            int: Entero que representa la clave principal del tipo de producto cosmético.
+        """
         nombre_tipo_seleccionado = self.cb_tipo_prod.currentText()
         clave_principal_tipo = self.diccionario_tipo_prod.get(
             nombre_tipo_seleccionado)
 
-        print(f'Tipo seleccionado: {nombre_tipo_seleccionado}')
-        print(f'Clave principal tipo: {clave_principal_tipo}')
-
         return clave_principal_tipo
 
     def guardar_nuevo(self):
+        """
+        Guarda un nuevo producto cosmético
+        """
+
         # Recuperar datos de los lineEdit
         try:
             nombre = self.le_nombre_prod.text()
@@ -339,7 +368,7 @@ class VentanaProducto(QWidget, Ui_Form):
         self.tabWidget.setCurrentIndex(1)
 
         self.initial_query.exec(
-        """
+            """
             select
                 c.id_cosmeticos,
                 c.nombre_cosmeticos,
@@ -357,8 +386,6 @@ class VentanaProducto(QWidget, Ui_Form):
             order by
                 c.id_cosmeticos asc
         """
-        
-        
-        
+
         )
         self.model.setQuery(self.initial_query)
