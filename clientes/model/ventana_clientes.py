@@ -5,9 +5,21 @@ from PySide6.QtCore import Qt, QSortFilterProxyModel
 from clientes.view.ui_ventana_clientes2 import Ui_Form
 from clientes.model.ventana_detalle import VentanaDetalle
 from auxiliares import VentanaEmergenteVacio
+from validar_datos_entrada import set_validar_letras, set_validar_numeros, set_validar_telefono
 
 
 class VentanaCliente(QWidget, Ui_Form):
+    """ 
+    Clase que representa la ventana de clientes.
+    Hereda de QMainWindow para proporcionar una ventana y de
+    Ui_MainWindow para cargar la interfaz gráfica.
+
+     Args:
+        QWidget (QWidget): Clase base para todas las ventanas de la aplicación
+        Ui_Form (Ui_Form): Clase generada que define la interfaz gráfica de la ventana.
+
+    """
+
     def __init__(self, ventana_principal):
         super().__init__()
         self.setupUi(self)
@@ -15,6 +27,9 @@ class VentanaCliente(QWidget, Ui_Form):
         self.setWindowModality(Qt.ApplicationModal)
         self.showMaximized()
         self.ventana_principal = ventana_principal
+
+        set_validar_numeros(self.le_codigo_postal)
+        set_validar_telefono(self.le_telefono)
 
         # Crear un model de tabla
 
@@ -74,14 +89,27 @@ class VentanaCliente(QWidget, Ui_Form):
         self.btn_guardar_nuevo.clicked.connect(self.guardar_nuevo)
 
     def cambia_pestaña(self):
+        """
+        Cambia la pestaña a la pestaña de listado de clientes
+        """
         self.tabWidget.setCurrentIndex(1)
 
     def closeEvent(self, event):
-        # Cuando se cierra la ventana secundaria, se muestra la ventana principal
+        """
+        Maneja el evento del cierre de la ventana.
+        Cuando se cierra la ventana secundaria, se muestra la ventana padre
+        Args:
+            event (QCloseEvent): El evento de cierre que contiene información sobre el 
+            cierre de la ventana.
+        """
+
         self.ventana_principal.show()
         event.accept()
 
     def filter(self):
+        """
+        Filtra la tabla de clientes según el texto ingresado en el campo de búsqueda
+        """
         text = self.le_buscar.text()
         # Usar setFilterFixedString en lugar de setFilterRegExp
         self.proxy_model.setFilterFixedString(text)
@@ -90,6 +118,9 @@ class VentanaCliente(QWidget, Ui_Form):
         self.proxy_model.invalidate()  # Asegurarse de que el proxy model se actualice
 
     def guardar_nuevo(self):
+        """
+        Guarda un nuevo cliente en la base de datos
+        """
 
         # Recuperar datos de los lineEdit
         nombre = self.le_nombre.text()
@@ -132,23 +163,20 @@ class VentanaCliente(QWidget, Ui_Form):
             self.le_email.setText("")
             self.le_contacto.setText("")
 
-            # self.close()
-
             self.tabWidget.setCurrentIndex(1)
 
             self.initial_query.exec(
                 "select * from clientes where activo_clientes=true order by id_clientes")
             self.model.setQuery(self.initial_query)
-            # self.model.select()
-            # self.tv_clientes.reset()
             self.tv_clientes.selectRow(0)
         else:
             ventana_confirmacion = VentanaEmergenteVacio()
             respuesta = ventana_confirmacion.exec()
-            # if respuesta:
-            #     pass
 
     def ver_detalle_cliente2(self):
+        """
+        Funcion que permite ver los detalles de un cliente seleccionado en la tabla
+        """
         self.ventana_detalle = VentanaDetalle(self)
         selected = self.tv_clientes.selectedIndexes()
         if selected:

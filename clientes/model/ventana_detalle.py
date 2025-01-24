@@ -7,6 +7,13 @@ from auxiliares import VentanaEmergenteBorrar
 
 
 class VentanaDetalle(QWidget, Ui_Form):
+    """
+    Clase que representa la ventana para mostrar los detalles de un cliente.
+
+    Args:
+        QWidget (_type_): _description_
+        Ui_Form (_type_): _description_
+    """
     def __init__(self, ventana_cliente):
         super().__init__()
 
@@ -24,11 +31,22 @@ class VentanaDetalle(QWidget, Ui_Form):
         self.btn_actualizar.clicked.connect(self.actualizar_cliente)
 
     def closeEvent(self, event):
-        # Cuando se cierra la ventana secundaria, se muestra la ventana principal
+        """
+        Maneja el evento del cierre de la ventana.
+        Cuando se cierra la ventana detalle, se muestra la ventana clientes
+
+        Args:
+            event (QCloseEvent): El evento de cierre que contiene información sobre el 
+            cierre de la ventana.
+        """
+        
         self.ventana_cliente.show()
         event.accept()
 
     def borrar_cliente(self):
+        """
+        Borra un cliente.
+        """
 
         ventana_confirmacion = VentanaEmergenteBorrar()
         respuesta = ventana_confirmacion.exec()
@@ -52,6 +70,9 @@ class VentanaDetalle(QWidget, Ui_Form):
             self.close()
 
     def limpiar_datos(self):
+        """
+        Limpia los datos de la ventana.
+        """
         self.le_codigo.setText("")
         self.le_nombre.setText("")
         self.le_direccion.setText("")
@@ -63,6 +84,9 @@ class VentanaDetalle(QWidget, Ui_Form):
         self.le_contacto.setText("")
 
     def actualizar_cliente(self):
+        """
+        Actualiza un cliente.
+        """
 
         codigo = int(
             self.le_codigo.text())  # Lo paso a entero para que coincida con el tipo de datos de la bd
