@@ -71,15 +71,25 @@
          <item row="2" column="1">
           <widget class="QLineEdit" name="le_caducidad_det"/>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="lbl_cliente_det">
            <property name="text">
             <string>Cliente</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="4" column="1">
           <widget class="QComboBox" name="cb_cliente"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lbl_tipo_det">
+           <property name="text">
+            <string>Tipo</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="cb_tipo"/>
          </item>
         </layout>
        </item>
