@@ -13,7 +13,7 @@ from conexion_v3 import Conexion
 
 
 class VentanaPrincipal(QMainWindow, Ui_MainWindow):
-    """Ventana de bienvenida del proyecto
+    """Clase que representa la Ventana de bienvenida del proyecto
         Muestra 4 botones que al pulsar sobre cualquiera de ellos
         mostrará el módulo en cuestión en una nueva ventana"""
 
@@ -23,7 +23,6 @@ class VentanaPrincipal(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("Principal: labERP")
         self.showMaximized()
 
-        # self.label.setAlignment(QtCore.Qt.AlignCenter)  # Centra el texto
 
         # Carga la imagen
         original_pixmap = QPixmap(
@@ -99,7 +98,12 @@ class VentanaPrincipal(QMainWindow, Ui_MainWindow):
         self.hide()
 
     def closeEvent(self, event):
-        """Cuando se cierra la ventana principal, se cierra la conexion."""
+        """
+        Maneja el evento del cierre de la ventana.
+        Cuando se cierra la ventana secundaria, se muestra la ventana padre
+        Args:
+            event (QCloseEvent): 
+        """       
         event.accept()
         self.conexion.desconectar()
 
