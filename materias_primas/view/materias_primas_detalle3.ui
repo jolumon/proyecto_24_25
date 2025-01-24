@@ -141,6 +141,9 @@
                  <property name="placeholderText">
                   <string>Buscar por lote</string>
                  </property>
+                 <property name="clearButtonEnabled">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item>
@@ -167,6 +170,15 @@
              </item>
              <item>
               <widget class="QTableView" name="tv_entradas_mp_det">
+               <property name="editTriggers">
+                <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+               </property>
+               <property name="selectionMode">
+                <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+               </property>
+               <property name="selectionBehavior">
+                <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+               </property>
                <property name="sortingEnabled">
                 <bool>true</bool>
                </property>
