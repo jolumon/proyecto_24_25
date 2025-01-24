@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QTableView, QHeaderView, QAbstractItemView
+from PySide6.QtWidgets import QWidget, QTableView, QHeaderView, QAbstractItemView, QMessageBox
 
 from productos.view.ui_ventana_producto_detalle6 import Ui_Form
 from productos.model.ventana_fabricaciones_prod import VentanaFabricación
@@ -306,90 +306,95 @@ class VentanaDetalle(QWidget, Ui_Form):
 
         codigo = int(self.le_codigo_det.text())
         nombre = self.le_nombre_det.text()
-        caducidad = self.le_caducidad_det.text()
+        if nombre.strip() == "":
+            QMessageBox.warning(
+                self, "Error", "El campo nombre no puede estar vacío")
+            return
+        else:
+            caducidad = self.le_caducidad_det.text()
 
-        # Mostrar tipos de productos en el comboBox
-        self.diccionario_tipo_prod = {}
+            # Mostrar tipos de productos en el comboBox
+            self.diccionario_tipo_prod = {}
 
-        query_tipo_prod = QSqlQuery()
-        query_tipo_prod.prepare(
-            """
-                select
-                    id_tipos ,
-                    nombre_tipos
-                from
-                    tipos
-                where
-                    activo_tipos = true
-                order by 
-                    nombre_tipos
-            """
-        )
-        if query_tipo_prod.exec():
-            while query_tipo_prod.next():
-                tipo_id = query_tipo_prod.value(0)
-                nombre_tipo = query_tipo_prod.value(1)
-                self.cb_tipo.addItem(nombre_tipo)
-                self.diccionario_tipo_prod[nombre_tipo] = tipo_id
+            query_tipo_prod = QSqlQuery()
+            query_tipo_prod.prepare(
+                """
+                    select
+                        id_tipos ,
+                        nombre_tipos
+                    from
+                        tipos
+                    where
+                        activo_tipos = true
+                    order by 
+                        nombre_tipos
+                """
+            )
+            if query_tipo_prod.exec():
+                while query_tipo_prod.next():
+                    tipo_id = query_tipo_prod.value(0)
+                    nombre_tipo = query_tipo_prod.value(1)
+                    self.cb_tipo.addItem(nombre_tipo)
+                    self.diccionario_tipo_prod[nombre_tipo] = tipo_id
 
-        tipo_ids = self.obtener_clave_principal_tipo()
+            tipo_ids = self.obtener_clave_principal_tipo()
 
-        # Mostrar clientes en el comboBox
-        self.diccionario_clientes_act = {}
+            # Mostrar clientes en el comboBox
+            self.diccionario_clientes_act = {}
 
-        query_clientes_actualizar = QSqlQuery()
-        query_clientes_actualizar.prepare(
-            f'select id_clientes, nombre_clientes from clientes where activo_clientes=true order by nombre_clientes')
+            query_clientes_actualizar = QSqlQuery()
+            query_clientes_actualizar.prepare(
+                f'select id_clientes, nombre_clientes from clientes where activo_clientes=true order by nombre_clientes')
 
-        if query_clientes_actualizar.exec():
-            while query_clientes_actualizar.next():
-                cliente_id = query_clientes_actualizar.value(0)
-                nombre_cli = query_clientes_actualizar.value(1)
-                self.cb_cliente.addItem(nombre_cli)
-                self.diccionario_clientes_act[nombre_cli] = cliente_id
+            if query_clientes_actualizar.exec():
+                while query_clientes_actualizar.next():
+                    cliente_id = query_clientes_actualizar.value(0)
+                    nombre_cli = query_clientes_actualizar.value(1)
+                    self.cb_cliente.addItem(nombre_cli)
+                    self.diccionario_clientes_act[nombre_cli] = cliente_id
 
-        cliente_ids = int(self.obtener_clave_principal())
+            cliente_ids = int(self.obtener_clave_principal())
 
-        query_actualizar = QSqlQuery()
-        query_actualizar.prepare(
-            f'update cosmeticos set nombre_cosmeticos=:nombre,fecha_cad_cosmeticos=:caducidad,tipo_id_cosmeticos=:tipo_id, cliente_id_cosmeticos=:cliente_id where id_cosmeticos = :codigo')
-        query_actualizar.bindValue(":nombre", nombre)
-        query_actualizar.bindValue(":caducidad", caducidad)
-        query_actualizar.bindValue(":tipo_id", tipo_ids)
-        query_actualizar.bindValue(":cliente_id", cliente_ids)
-        query_actualizar.bindValue(":codigo", codigo)
+            query_actualizar = QSqlQuery()
+            query_actualizar.prepare(
+                f'update cosmeticos set nombre_cosmeticos=:nombre,fecha_cad_cosmeticos=:caducidad,tipo_id_cosmeticos=:tipo_id, cliente_id_cosmeticos=:cliente_id where id_cosmeticos = :codigo')
+            query_actualizar.bindValue(":nombre", nombre)
+            query_actualizar.bindValue(":caducidad", caducidad)
+            query_actualizar.bindValue(":tipo_id", tipo_ids)
+            query_actualizar.bindValue(":cliente_id", cliente_ids)
+            query_actualizar.bindValue(":codigo", codigo)
 
-        query_actualizar.exec()
+            query_actualizar.exec()
 
-        self.ventana_producto.initial_query.exec(
-            """
-                select
-                    c.id_cosmeticos,
-                    c.nombre_cosmeticos,
-                    c.fecha_cad_cosmeticos,
-                    t.nombre_tipos ,
-                    cli.nombre_clientes
-                from
-                    cosmeticos c
-                inner join clientes cli on
-                    c.cliente_id_cosmeticos = cli.id_clientes
-                inner join tipos t on
-                    c.tipo_id_cosmeticos = t.id_tipos 
-                where
-                    c.activo_cosmeticos = true
-                order by
-                    c.id_cosmeticos asc
-            """
-        )
+            self.ventana_producto.initial_query.exec(
+                """
+                    select
+                        c.id_cosmeticos,
+                        c.nombre_cosmeticos,
+                        c.fecha_cad_cosmeticos,
+                        t.nombre_tipos ,
+                        cli.nombre_clientes
+                    from
+                        cosmeticos c
+                    inner join clientes cli on
+                        c.cliente_id_cosmeticos = cli.id_clientes
+                    inner join tipos t on
+                        c.tipo_id_cosmeticos = t.id_tipos 
+                    where
+                        c.activo_cosmeticos = true
+                    order by
+                        c.id_cosmeticos asc
+                """
+            )
 
-        self.ventana_producto.model.setQuery(
-            self.ventana_producto.initial_query)
+            self.ventana_producto.model.setQuery(
+                self.ventana_producto.initial_query)
 
-        self.close()
-        self.ventana_producto.tabWidget.setCurrentIndex(1)
-        self.ventana_producto.tv_productos.selectRow(0)
+            self.close()
+            self.ventana_producto.tabWidget.setCurrentIndex(1)
+            self.ventana_producto.tv_productos.selectRow(0)
 
-        print(f'Actualizado')
+            print(f'Actualizado')
 
     def obtener_clave_principal(self):
         """
@@ -741,7 +746,7 @@ class VentanaDetalle(QWidget, Ui_Form):
         Returns:
             int: Id del tipo de cosmético
         """
-        
+
         nombre_tipo_seleccionado = self.cb_tipo.currentText()
         clave_principal_tipo = self.diccionario_tipo_prod.get(
             nombre_tipo_seleccionado)

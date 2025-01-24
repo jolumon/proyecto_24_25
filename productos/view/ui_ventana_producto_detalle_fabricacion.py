@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'ventana_producto_detalle_fabricacionPZzxFq.ui'
+## Form generated from reading UI file 'ventana_producto_detalle_fabricacionbpSXFt.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.0
 ##
@@ -132,6 +132,7 @@ class Ui_Form(object):
 
         self.btn_salir_dof = QPushButton(Form)
         self.btn_salir_dof.setObjectName(u"btn_salir_dof")
+        self.btn_salir_dof.setStyleSheet(u"background-color: rgb(22, 183, 40);")
 
         self.horizontalLayout_2.addWidget(self.btn_salir_dof)
 

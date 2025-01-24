@@ -337,34 +337,39 @@ class VentanaDetalle(QWidget, Ui_Form):
         codigo = int(
             self.le_codigo_det.text())  # Lo paso a entero para que coincida con el tipo de datos de la bd
         nombre = self.le_nombre_det.text()
+        if nombre.strip() == "":
+            QMessageBox.warning(
+                self, "Error", "El campo nombre no puede estar vacío")
+            return
+        else:
 
-        query = QSqlQuery()
+            query = QSqlQuery()
 
-        query.prepare(
-            f'UPDATE materias_primas SET nombre_mps=:nombre WHERE id_mps=:codigo')
+            query.prepare(
+                f'UPDATE materias_primas SET nombre_mps=:nombre WHERE id_mps=:codigo')
 
-        query.bindValue(":codigo", codigo)
-        query.bindValue(":nombre", nombre)
+            query.bindValue(":codigo", codigo)
+            query.bindValue(":nombre", nombre)
 
-        query.exec()
+            query.exec()
 
-        self.ventana_mp.initial_query.exec(
-            """
-                        select
-                            mp.id_mps,
-                            mp.nombre_mps,
-                            COALESCE(sum(ls.cantidad_lotes_stock),0)
-                        from
-                            materias_primas mp
-                        left join lotes_stock ls on
-                            mp.id_mps =ls.mp_id_lotes_stock
-                        where mp.activo_mps =true
-                        group by mp.id_mps,mp.nombre_mps
-                        order by mp.id_mps
-                    """)
-        self.ventana_mp.model.setQuery(self.ventana_mp.initial_query)
-        self.ventana_mp.tv_mat_primas.selectRow(0)
-        self.close()
+            self.ventana_mp.initial_query.exec(
+                """
+                            select
+                                mp.id_mps,
+                                mp.nombre_mps,
+                                COALESCE(sum(ls.cantidad_lotes_stock),0)
+                            from
+                                materias_primas mp
+                            left join lotes_stock ls on
+                                mp.id_mps =ls.mp_id_lotes_stock
+                            where mp.activo_mps =true
+                            group by mp.id_mps,mp.nombre_mps
+                            order by mp.id_mps
+                        """)
+            self.ventana_mp.model.setQuery(self.ventana_mp.initial_query)
+            self.ventana_mp.tv_mat_primas.selectRow(0)
+            self.close()
 
     def obtener_cantidad_mp(self, codigo_mp):
         """
