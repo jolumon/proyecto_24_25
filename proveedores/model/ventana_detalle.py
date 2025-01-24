@@ -3,10 +3,22 @@ from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView
 from PySide6.QtSql import QSqlQuery, QSqlQueryModel
 from PySide6.QtCore import Qt
 from proveedores.view.ui_proveedor_detalle import Ui_Form
-from auxiliares import VentanaEmergenteBorrar
+from auxiliares import VentanaEmergenteBorrar, VentanaEmergenteVacio
+from validar_datos_entrada import set_validar_cantidad, set_validar_telefono, set_validar_numeros
 
 
 class VentanaDetalle(QWidget, Ui_Form):
+    """
+         Clase que representa la ventana de detalle un proveedor.
+    Hereda de QMainWindow para proporcionar una ventana y de
+    Ui_MainWindow para cargar la interfaz gráfica.
+
+     Args:
+        QWidget (QWidget): Clase base para todas las ventanas de la aplicación
+        Ui_Form (Ui_Form): Clase generada que define la interfaz gráfica de la ventana.
+    """
+    
+    
     def __init__(self, ventana_proveedor):
         super().__init__()
 
@@ -14,6 +26,10 @@ class VentanaDetalle(QWidget, Ui_Form):
 
         self.setWindowModality(Qt.ApplicationModal)
         self.ventana_proveedor = ventana_proveedor
+
+        set_validar_telefono(self.le_telefono)
+        set_validar_telefono(self.le_movil)
+        set_validar_numeros(self.le_codigo_postal)
 
         self.showMaximized()
 
@@ -24,11 +40,20 @@ class VentanaDetalle(QWidget, Ui_Form):
         self.btn_actualizar.clicked.connect(self.actualizar_proveedor)
 
     def closeEvent(self, event):
-        # Cuando se cierra la ventana secundaria, se muestra la ventana principal
+        """
+        Maneja el evento del cierre de la ventana.
+        Cuando se cierra la ventana detalle de proveedor, se muestra la ventana de proveedores
+        Args:
+            event (QCloseEvent): El evento de cierre que contiene información sobre el 
+            cierre de la ventana.
+        """ 
         self.ventana_proveedor.show()
         event.accept()
 
     def borrar_proveedor(self):
+        """
+        Borrar proveedor.
+        """
 
         ventana_confirmacion = VentanaEmergenteBorrar()
         respuesta = ventana_confirmacion.exec()
@@ -45,19 +70,26 @@ class VentanaDetalle(QWidget, Ui_Form):
             query.exec()
 
             self.limpiar_datos()
-            self.ventana_proveedor.initial_query.exec("select * from proveedores where activo_provedores=true order by id_proveedores")
-            self.ventana_proveedor.model.setQuery(self.ventana_proveedor.initial_query)
-        
+            self.ventana_proveedor.initial_query.exec(
+                "select * from proveedores where activo_provedores=true order by id_proveedores")
+            self.ventana_proveedor.model.setQuery(
+                self.ventana_proveedor.initial_query)
+
             self.ventana_proveedor.tv_proveedores.selectRow(0)
             # self.ventana_proveedor.model.select()
             self.close()
-            
-            self.ventana_proveedor.initial_query.exec("select * from proveedores where activo_proveedores=true order by id_proveedores")
-            self.ventana_proveedor.model.setQuery(self.ventana_proveedor.initial_query)
-        
+
+            self.ventana_proveedor.initial_query.exec(
+                "select * from proveedores where activo_proveedores=true order by id_proveedores")
+            self.ventana_proveedor.model.setQuery(
+                self.ventana_proveedor.initial_query)
+
             self.ventana_proveedor.tv_proveedores.selectRow(0)
 
     def limpiar_datos(self):
+        """
+        Limpiar datos de la ventana.
+        """
         self.le_codigo.setText("")
         self.le_nombre.setText("")
         self.le_direccion.setText("")
@@ -70,11 +102,19 @@ class VentanaDetalle(QWidget, Ui_Form):
         self.le_email.setText("")
 
     def actualizar_proveedor(self):
+        """
+        Actualizar proveedor.
+        """
 
         codigo = int(
             self.le_codigo.text())  # Lo paso a entero para que coincida con el tipo de datos de la bd
         # codigo = self.model.index(fila, 0).data()->Aquí no conozco fila, tendría que hacerla global
+
         nombre = self.le_nombre.text()
+        if nombre.strip() == "":
+            ventana_nombre_error = VentanaEmergenteVacio()
+            respuesta = ventana_nombre_error.exec()
+            return
         direccion = self.le_direccion.text()
         codigo_postal = self.le_codigo_postal.text()
         poblacion = self.le_poblacion.text()
@@ -102,15 +142,16 @@ class VentanaDetalle(QWidget, Ui_Form):
         query.bindValue(":provincia", provincia)
         query.bindValue(":telefono", telefono)
         query.bindValue(":contacto", contacto)
-        query.bindValue(":movil",movil)
+        query.bindValue(":movil", movil)
         query.bindValue(":email", email)
 
         query.exec()
 
         self.close()
 
-        self.ventana_proveedor.initial_query.exec("select * from proveedores where activo_proveedores=true order by id_proveedores")
-        self.ventana_proveedor.model.setQuery(self.ventana_proveedor.initial_query)
-        
+        self.ventana_proveedor.initial_query.exec(
+            "select * from proveedores where activo_proveedores=true order by id_proveedores")
+        self.ventana_proveedor.model.setQuery(
+            self.ventana_proveedor.initial_query)
+
         self.ventana_proveedor.tv_proveedores.selectRow(0)
-        

@@ -5,9 +5,20 @@ from proveedores.view.ui_ventana_proveedores2 import Ui_Form
 from proveedores.model.ventana_detalle import VentanaDetalle
 from PySide6.QtCore import Qt, QSortFilterProxyModel
 from auxiliares import VentanaEmergenteVacio
+from validar_datos_entrada import set_validar_cantidad, set_validar_telefono, set_validar_numeros
 
 
 class VentanaProveedor(QWidget, Ui_Form):
+    """
+        Clase que representa la ventana de proveedores.
+    Hereda de QMainWindow para proporcionar una ventana y de
+    Ui_MainWindow para cargar la interfaz gráfica.
+
+     Args:
+        QWidget (QWidget): Clase base para todas las ventanas de la aplicación
+        Ui_Form (Ui_Form): Clase generada que define la interfaz gráfica de la ventana.
+    """
+
     def __init__(self, ventana_principal):
         super().__init__()
         self.setupUi(self)
@@ -15,6 +26,10 @@ class VentanaProveedor(QWidget, Ui_Form):
         self.setWindowModality(Qt.ApplicationModal)
         self.showMaximized()
         self.ventana_principal = ventana_principal
+
+        set_validar_telefono(self.le_telefono)
+        set_validar_telefono(self.le_movil)
+        set_validar_numeros(self.le_codigo_postal)
 
         # Crear un model de tabla
 
@@ -24,11 +39,6 @@ class VentanaProveedor(QWidget, Ui_Form):
         self.model = QSqlQueryModel()
         self.model.setQuery(self.initial_query)
 
-        # self.model = QSqlTableModel()
-        # self.model.setTable('proveedores')
-        # self.model.select()
-
-        # self.model.setQuery("SELECT * FROM proveedores ORDER BY id_proveedor")
         self.model.setHeaderData(0, Qt.Horizontal, str("Código"))
         self.model.setHeaderData(1, Qt.Horizontal, str("Nombre"))
         self.model.setHeaderData(2, Qt.Horizontal, str("Dirección"))
@@ -86,22 +96,39 @@ class VentanaProveedor(QWidget, Ui_Form):
         self.btn_cancelar_nuevo_proveedor.clicked.connect(self.cambia_pestaña)
 
     def cambia_pestaña(self):
+        """
+        Cambiar de pestaña a la pestaña de listado de proveedores
+        """
         self.tabWidget.setCurrentIndex(1)
 
     def closeEvent(self, event):
-        # Cuando se cierra la ventana proveedores, se muestra la ventana principal
+        """
+        Maneja el evento del cierre de la ventana.
+        Cuando se cierra la ventana proveedores, se muestra la ventana principal
+        Args:
+            event (QCloseEvent): El evento de cierre que contiene información sobre el 
+            cierre de la ventana.
+
+        """
+
         self.ventana_principal.show()
         event.accept()
 
     def filter(self):
+        """
+        Filtrar la tabla de proveedores según el texto ingresado en el campo de búsqueda
+        """
         text = self.le_buscar.text()
         # Usar setFilterFixedString en lugar de setFilterRegExp
         self.proxy_model.setFilterFixedString(text)
-        # Filtrar por la columna "nombre_persona"
+        # Filtrar por la columna proveedor
         self.proxy_model.setFilterKeyColumn(1)
         self.proxy_model.invalidate()  # Asegurarse de que el proxy model se actualice
 
     def guardar_nuevo(self):
+        """
+        Guardar un nuevo proveedor en la base de datos
+        """
         # Recuperar datos de los lineEdit
         nombre = self.le_nombre.text()
 
@@ -157,6 +184,10 @@ class VentanaProveedor(QWidget, Ui_Form):
             respuesta = ventana_confirmacion.exec()
 
     def ver_detalle_proveedor2(self):
+        """"
+        Funcion para ver el detalle de un proveedor
+        """
+
         # Se crea la ventana de detalle del cliente
         self.ventana_detalle = VentanaDetalle(self)
         selected_index = self.tv_proveedores.selectedIndexes()
@@ -200,16 +231,26 @@ class VentanaProveedor(QWidget, Ui_Form):
 
             self.query_materias_primas = QSqlQuery()
             self.query_materias_primas.prepare("""
-                select
-                    mp.id_mps ,mp.nombre_mps ,ls.cantidad_lotes_stock,ls.nombre_lotes_stock,ls.fecha_caducidad_lotes_stock 
-                from
-                    lotes_stock ls 
-                inner join materias_primas mp on ls.mp_id_lotes_stock =mp.id_mps 
-                inner join rel_mps_proveedores rmp on mp.id_mps = rmp.mp_id_rmp 
-                inner join proveedores p on rmp.proveedor_id_rmp =p.id_proveedores 
-                where
-                        mp.activo_mps = true
-                        and rmp.proveedor_id_rmp =:codigo"""
+                SELECT
+                    mp.id_mps,
+                    mp.nombre_mps,
+                    COALESCE(SUM(ls.cantidad_lotes_stock), 0) AS total_cantidad,
+                    CASE 
+                        WHEN mp.activo_mps THEN 'Verdadero' 
+                        ELSE 'Falso' 
+                    END AS estado_activo
+                FROM
+                    lotes_stock ls
+                RIGHT JOIN materias_primas mp ON
+                    ls.mp_id_lotes_stock = mp.id_mps
+                INNER JOIN rel_mps_proveedores rmp ON
+                    mp.id_mps = rmp.mp_id_rmp 
+                WHERE
+                    rmp.proveedor_id_rmp = :codigo
+                GROUP BY
+                    mp.id_mps,
+                    mp.nombre_mps,
+                    mp.activo_mps"""
                                                )
             # "select mp.id_mp ,mp.nombre_mp, mp.cantidad_mp from materias_primas mp inner join matprimas_proveedores mp2 on mp.id_mp=mp2.id_mp_mpprov where mp.activo_mp =true  and mp2.id_prov_mpprov =:codigo")
             self.query_materias_primas.bindValue(':codigo', codigo)
@@ -220,9 +261,8 @@ class VentanaProveedor(QWidget, Ui_Form):
 
             self.model2.setHeaderData(0, Qt.Horizontal, str("Código"))
             self.model2.setHeaderData(1, Qt.Horizontal, str("Materia prima"))
-            self.model2.setHeaderData(2, Qt.Horizontal, str("Cantidad / kg"))
-            self.model2.setHeaderData(3, Qt.Horizontal, str("Lote"))
-            self.model2.setHeaderData(4, Qt.Horizontal, str("Fecha caducidad"))
+            self.model2.setHeaderData(2, Qt.Horizontal, str("Cantidad / g"))
+            self.model2.setHeaderData(3, Qt.Horizontal, str("Activo"))
 
             # Crear una vista de tabla
             self.ventana_detalle.tv_materias_primas.setModel(self.model2)
