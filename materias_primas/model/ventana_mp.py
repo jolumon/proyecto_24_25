@@ -5,11 +5,16 @@ from PySide6.QtCore import Qt, QSortFilterProxyModel, QDate
 from materias_primas.view.ui_materias_primas3 import Ui_Form
 from materias_primas.model.ventana_detalle_mp import VentanaDetalle
 from auxiliares import VentanaEmergenteBorrar, VentanaMPExistente, VentanaFaltanDatos
-from PySide6.QtGui import QRegularExpressionValidator
-from PySide6.QtCore import QRegularExpression
+from validar_datos_entrada import set_validar_letras
 
 
 class VentanaMateriasPrimas(QWidget, Ui_Form):
+    """ 
+    Clase que representa la ventana de materias primas.
+    Hereda de QMainWindow para proporcionar una ventana y de
+    Ui_MainWindow para cargar la interfaz gráfica.
+    """
+
     def __init__(self, ventana_principal):
         super().__init__()
         self.setupUi(self)
@@ -18,12 +23,10 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
         self.showMaximized()
         self.ventana_principal = ventana_principal
 
-        #Limitar la entrada de números en el lineEdit de nueva materia prima
-        regex = QRegularExpression("^[A-Za-z ]*$")  # Solo letras y espacios
-        validator = QRegularExpressionValidator(regex, self.le_nombre_nueva)
-        # Establecer el validador en el QLineEdit
-        self.le_nombre_nueva.setValidator(validator)
-        
+        # #Limitar la entrada de números en el lineEdit de nueva materia prima
+
+        set_validar_letras(self.le_nombre_nueva)
+
         # Crear un model de tabla
 
         self.initial_query = QSqlQuery()
@@ -96,9 +99,9 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
 
         self.cb_proveedor_nueva.setCurrentIndex(-1)
 
-    #     #Nueva pestaña de materias primas
+        # Pestaña entradas de la ventana materias primas
 
-    #     # Crear un model de tabla
+        # Crear un model de tabla
 
         self.entradas_query = QSqlQuery()
         self.entradas_query.exec(
@@ -119,7 +122,7 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
                 inner join proveedores p on
                     p.id_proveedores = rmp.proveedor_id_rmp 
                 order by
-                    e.fecha_ent desc"""
+                    e.id_ent desc"""
 
         )
         self.model_ent = QSqlQueryModel()
@@ -127,7 +130,7 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
 
        # Cabeceras de la tabla
         cabeceras = ['Codigo', 'Nombre', 'Lote',
-                     'Fecha entrada', 'Cantidad / kg', 'Proveedor']
+                     'Fecha entrada', 'Cantidad / g', 'Proveedor']
         for i, cabecera in enumerate(cabeceras):
             self.model_ent.setHeaderData(i, Qt.Horizontal, cabecera)
 
@@ -171,30 +174,42 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
         self.btn_cerrar_listado_mp.clicked.connect(self.close)
 
     def filter(self):
+        """Filtra la busqueda de materias primas por nombre
+        """
         text = self.le_buscar_mp.text()
         # Usar setFilterFixedString en lugar de setFilterRegExp
         self.proxy_model_mp.setFilterFixedString(text)
         # Filtrar por la columna "nombre_persona"
         self.proxy_model_mp.setFilterKeyColumn(1)
         self.proxy_model_mp.invalidate()  # Asegurarse de que el proxy model se actualice
-        
+
     def filter_ent_mp(self):
+        """Filtar la busqueda en la pestaña entradas por materias primas
+        """
         text = self.le_buscar_entrada_mp.text()
         # Usar setFilterFixedString en lugar de setFilterRegExp
         self.proxy_model_mp_ent.setFilterFixedString(text)
         # Filtrar por la columna "nombre_persona"
         self.proxy_model_mp_ent.setFilterKeyColumn(1)
-        self.proxy_model_mp_ent.invalidate()  # Asegurarse de que el proxy model se actualice
-    
+        # Asegurarse de que el proxy model se actualice
+        self.proxy_model_mp_ent.invalidate()
+
     def filter_ent_lote(self):
+        """
+        Filtrar la busqueda por lote
+        """
         text = self.ventana_detalle.le_buscar_entrada.text()
         # Usar setFilterFixedString en lugar de setFilterRegExp
         self.proxy_model_lote_ent.setFilterFixedString(text)
         # Filtrar por la columna "nombre_persona"
         self.proxy_model_lote_ent.setFilterKeyColumn(2)
-        self.proxy_model_lote_ent.invalidate()  # Asegurarse de que el proxy model se actualice
+        # Asegurarse de que el proxy model se actualice
+        self.proxy_model_lote_ent.invalidate()
 
     def ver_detalle_producto2(self):
+        """ 
+        Muestra el detalle de un producto seleccionado en la tabla.
+        """
 
         self.ventana_detalle = VentanaDetalle(self)
         selected_index = self.tv_mat_primas.selectedIndexes()
@@ -270,18 +285,21 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             self.model3.setHeaderData(3, Qt.Horizontal, str("Fecha Caducidad"))
             self.model3.setHeaderData(4, Qt.Horizontal, str("Cantidad / g"))
             self.model3.setHeaderData(5, Qt.Horizontal, str("Proveedor"))
-            
-             # Crear un filtro para la búsqueda
+
+            # Crear un filtro para la búsqueda
             self.proxy_model_lote_ent = QSortFilterProxyModel()
             self.proxy_model_lote_ent.setSourceModel(self.model3)
 
             # Crear un cuadro de texto para la búsqueda
 
-            self.ventana_detalle.le_buscar_entrada.setPlaceholderText("Buscar por lote...")
-            self.ventana_detalle.le_buscar_entrada.textChanged.connect(self.filter_ent_lote)
+            self.ventana_detalle.le_buscar_entrada.setPlaceholderText(
+                "Buscar por lote...")
+            self.ventana_detalle.le_buscar_entrada.textChanged.connect(
+                self.filter_ent_lote)
 
             # Crear una vista de tabla
-            self.ventana_detalle.tv_entradas_mp_det.setModel(self.proxy_model_lote_ent)
+            self.ventana_detalle.tv_entradas_mp_det.setModel(
+                self.proxy_model_lote_ent)
             # self.ventana_detalle.tv_entradas_mp_det.setEditTriggers(
             #     QAbstractItemView.NoEditTriggers)  # Deshabilitar edición
             # self.ventana_detalle.tv_entradas_mp_det.setSelectionMode(
@@ -376,6 +394,11 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             self.hide()
 
     def obtener_clave_principal_proveedor(self):
+        """ Obtiene la clave principal del proveedor seleccionado en el combobox
+
+        Returns:
+            int: La clave principal del proveedor
+        """
 
         nombre_seleccionado = self.cb_proveedor_nueva.currentText()
         clave_principal = self.diccionario_proveedores.get(
@@ -384,16 +407,33 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
         return clave_principal
 
     def cambia_pestaña(self):
+        """
+        Resetea los datos de la materia prima y el combobox y marca la fila 0 de la tabla.
+        """
         self.le_nombre_nueva.setText("")
         self.cb_proveedor_nueva.setCurrentIndex(-1)
         self.tabWidget.setCurrentIndex(0)
 
     def closeEvent(self, event):
+        """
+        Maneja el evento del cierre de la ventana.
+        Cuando se cierra la ventana secundaria, se muestra la ventana padre
+        Args:
+            event (QCloseEvent): 
+        """
         # Cuando se cierra la ventana secundaria, se muestra la ventana principal
         self.ventana_principal.show()
         event.accept()
 
     def mp_existe(self, nombre):
+        """ Indica la existencia de una materia prima
+
+        Args:
+            nombre (str): Recibe un nombre tipo string
+
+        Returns:
+            boolean: Devuelve True si la materia prima existe y False si no existe
+        """
         query = QSqlQuery()
         query.prepare(
             "SELECT COUNT(*) FROM materias_primas WHERE nombre_mps = :nombre")
@@ -411,11 +451,15 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             return False
 
     def guardar_nueva_mp(self):
+        """
+        Guarda una nueva materia prima en la base de datos.
+        """
 
         try:
             nombre = self.le_nombre_nueva.text()
+            nombre_formateado = nombre[0].upper()+nombre[1:].lower()
             # Recuperar datos de los lineEdit y comboBox
-            if nombre.strip() == "":
+            if nombre_formateado.strip() == "":
                 raise Exception
                 print("Algo mal está pasando")
             proveedor = int(self.obtener_clave_principal_proveedor())
@@ -430,18 +474,18 @@ class VentanaMateriasPrimas(QWidget, Ui_Form):
             # Pop up indicando que ya existe la materia prima
             ventana_mp_existente = VentanaMPExistente()
             respuesta = ventana_mp_existente.exec()
-            self.cambia_pestaña()
+            # self.cambia_pestaña()
 
             return
 
-        if nombre.strip() != "":
+        if nombre_formateado.strip() != "":
 
             # Crear y preparacion de la sentencia sql para insertar materia prima
             query = QSqlQuery()
             query.prepare(
                 f'insert into materias_primas (nombre_mps) values (:nombre)')
 
-            query.bindValue(":nombre", nombre)
+            query.bindValue(":nombre", nombre_formateado)
             query.exec()
             # Crear y preparacion de la sentencia sql para insertar materia prima en rel_mps_proveedores automaticamente
             query_ultimo_id_mps = QSqlQuery()

@@ -3,22 +3,32 @@ from PySide6.QtWidgets import QWidget, QAbstractItemView, QHeaderView, QMessageB
 from PySide6.QtCore import Qt, QDate
 from materias_primas.view.ui_materias_primas_entrada_detalle import Ui_Form
 from auxiliares import VentanaEntradaNoValida, VentanaFaltanDatos, VentanaValueError
+from validar_datos_entrada import set_validar_cantidad
 
 
 class VentanaEntradaDetalle(QWidget, Ui_Form):
+    """Clase que representa una ventana se utiliza 
+    para modificar la cantidad entrada en una materia prima.
+
+    Esta clase hereda de QWidget para crear un widget que puede ser utilizado
+    como una ventana independiente. También hereda de Ui_Form para cargar
+    la interfaz gráfica. 
+
+    Args:
+        QWidget (QWidget): Clase base para todos los objetos de interfaz gráfica.
+        Ui_Form (object): Clase generada por PySide-Designer que define la interfaz
+                          gráfica de esta ventana.
+    """
     def __init__(self, ventana_detalle):
         super().__init__()
         self.setupUi(self)
 
-        # self.setWindowModality(Qt.ApplicationModal)
 
         self.ventana_detalle = ventana_detalle
-        # print("También he llegado a la entrada_detalle")
-
-        # fecha_cad = self.ventana_detalle.de_f_caducidad.text()
-        # print(f"Fecha_cad:{fecha_cad}")
-        # self.de_fecha_cad_de.setDate(QDate.fromString(fecha_cad, "dd/MM/yyyy"))
-        # self.le_cantidad_de.set(str(self.ventana_detalle.le_cantidad_entrada))
+        
+        # Limitar la entrada de datos erroneos
+        set_validar_cantidad(self.le_cantidad_de)
+        
 
     # Signal and Slots
 
@@ -28,11 +38,20 @@ class VentanaEntradaDetalle(QWidget, Ui_Form):
         # self.showMaximized()
 
     def closeEvent(self, event):
+        """
+            Maneja el evento del cierre de la ventana.
+            Cuando se cierra la ventana secundaria, se muestra la ventana padre
+            Args:
+                event (QCloseEvent): 
+        """
         # Cuando se cierra la ventana secundaria, se muestra la ventana principal
         self.ventana_detalle.show()
         event.accept()
 
     def guardar_modificacion_entrada(self):
+        """
+        Guarda la modificación de la cantidad y fecha caducidad de una entrada previamente seleccionada.
+        """
         print(f"Estoy en guardar_modificacion_entrada")
 
         selected_index = self.ventana_detalle.tv_entradas_mp_det.selectedIndexes()
@@ -132,6 +151,14 @@ class VentanaEntradaDetalle(QWidget, Ui_Form):
             query_actualizar_modi.lastError()
 
     def modificar_lotes_stock(self, nueva_fecha_cad, nueva_cantidad, lote):
+        """
+        Actualiza la fecha de caducidad y cantidad para un lote dado.
+
+        Args:
+            nueva_fecha_cad (date): _description_
+            nueva_cantidad (int): _description_
+            lote (str): _description_
+        """        
         query_actualizar_lotes_stock = QSqlQuery()
         query_actualizar_lotes_stock.prepare(
             """
@@ -154,6 +181,10 @@ class VentanaEntradaDetalle(QWidget, Ui_Form):
             query_actualizar_lotes_stock.lastError()
 
     def actualizar_modelos(self):
+        """
+        Actualiza las vistas de las tablas de las pestañas de la ventana detalle,
+        tras la modificación de datos.
+        """
         codigo = int(self.ventana_detalle.le_codigo_det.text())
         # print(f"ventana_mp: {self.ventana_detalle.ventana_mp}")
         # print(

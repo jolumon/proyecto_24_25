@@ -4,9 +4,23 @@ from materias_primas.view.ui_materias_primas_detalle3 import Ui_Form
 from PySide6.QtCore import Qt, QDate
 from auxiliares import VentanaEmergenteBorrar, VentanaFaltanDatos, VentanaEntradaNoValida, VentanaUbicacionNoDisponible, VentanaFaltaSeleccionarFila
 from materias_primas.model.ventana_entrada_detalle import VentanaEntradaDetalle
+from validar_datos_entrada import set_validar_cantidad
 
 
 class VentanaDetalle(QWidget, Ui_Form):
+    """
+    Clase que representa una ventana en el que se datalla una materia prima.
+
+    Esta clase hereda de QWidget para crear un widget que puede ser utilizado
+    como una ventana independiente. También hereda de Ui_Form para cargar
+    la interfaz gráfica. d
+
+    Args:
+        QWidget (QWidget): Clase base para todos los objetos de interfaz gráfica.
+        Ui_Form (object): Clase generada por PySide-Designer que define la interfaz
+                          gráfica de esta ventana.
+    """
+
     def __init__(self, ventana_mp):
         super().__init__()
         self.setupUi(self)
@@ -15,6 +29,8 @@ class VentanaDetalle(QWidget, Ui_Form):
         self.showMaximized()
 
         self.ventana_mp = ventana_mp
+
+        set_validar_cantidad(self.le_cantidad_entrada)
 
         # Mostrar proveedores en el comboBox de la pestaña entrada
         self.diccionario_proveedores_entrada = {}
@@ -95,6 +111,11 @@ class VentanaDetalle(QWidget, Ui_Form):
         self.tabWidget.setCurrentIndex(0)
 
     def obtener_clave_principal(self):
+        """Obtiene la clave principal del proveedor seleccionado en el combobox
+
+        Returns:
+            int: Devuelve la clave principal
+        """
         nombre_seleccionado = self.cb_proveedor_entrada.currentText()
         clave_principal = self.diccionario_proveedores_entrada.get(
             nombre_seleccionado)
@@ -102,6 +123,11 @@ class VentanaDetalle(QWidget, Ui_Form):
         return clave_principal
 
     def obtener_id_ubicacion(self):
+        """ Obtiene la clave principal de la ubicación seleccionada en el combobox
+
+        Returns:
+            int: La clave principal de la ubicación
+        """
         ubicacion_seleccionada = self.cb_ubicaciones_nueva_entrada.currentText()
         print(f"ubicacion_seleccionada_func:{ubicacion_seleccionada}")
         id_ubicacion = self.diccionario_ubicaciones_disponibles.get(
@@ -110,9 +136,12 @@ class VentanaDetalle(QWidget, Ui_Form):
         return id_ubicacion
 
     def guardar_entrada(self):
-        """ Guarda el registro de una nueva entrada en la base de datos """
+        """
+        Guarda el registro de una nueva entrada en la base de datos 
+        """
 
-        if self.le_codigo_entrada.text() == "" or self.obtener_clave_principal() == "" or self.de_f_caducidad.text() == "" or self.le_cantidad_entrada.text() == "":
+        if self.le_codigo_entrada.text() == "" or self.obtener_clave_principal() == "" \
+                or self.de_f_caducidad.text() == "" or self.le_cantidad_entrada.text() == "":
             ventana_faltan_datos = VentanaFaltanDatos()
             respuesta = ventana_faltan_datos.exec()
             return
@@ -150,7 +179,6 @@ class VentanaDetalle(QWidget, Ui_Form):
             print(f"Contacta con el administrador")
             ventana_faltan_datos = VentanaUbicacionNoDisponible()
             ventana_faltan_datos.exec()
-
             self.close()
             return
 
@@ -197,6 +225,51 @@ class VentanaDetalle(QWidget, Ui_Form):
                 query_insertar_nueva_entrada.exec()
                 print('Guardado')
 
+            # Actuliza pestaña materias primas tras la entrada de materia prima
+                self.ventana_mp.initial_query.exec(
+                    """
+                        select
+                            mp.id_mps,
+                            mp.nombre_mps,
+                            COALESCE(sum(ls.cantidad_lotes_stock),0)
+                        from
+                            materias_primas mp
+                        left join lotes_stock ls on
+                            mp.id_mps =ls.mp_id_lotes_stock
+                        where mp.activo_mps =true
+                        group by mp.id_mps,mp.nombre_mps
+                        order by mp.id_mps
+                    """
+                )
+                self.ventana_mp.model.setQuery(self.ventana_mp.initial_query)
+
+            # Actuliza pestaña entradas tras la entrada de materia prima
+
+                self.ventana_mp.entradas_query.exec(
+                    """ select
+                            e.id_ent ,
+                            mp.nombre_mps,
+                            e.nombre_lotes_ent ,
+                            e.fecha_ent ,
+                            e.cantidad_ent ,
+                            p.nombre_proveedores
+                        from
+                            entradas e
+                        inner join rel_mps_proveedores rmp on
+                            e.mp_id_ent = rmp.mp_id_rmp
+                            and e.proveedor_id_ent = rmp.proveedor_id_rmp
+                        inner join materias_primas mp on
+                            rmp.mp_id_rmp = mp.id_mps
+                        inner join proveedores p on
+                            p.id_proveedores = rmp.proveedor_id_rmp 
+                        order by
+                            e.id_ent desc"""
+                )
+                self.ventana_mp.model_ent.setQuery(
+                    self.ventana_mp.entradas_query)
+
+                self.ventana_mp.tv_mat_primas.selectRow(0)
+
                 self.close()
 
         except ValueError:
@@ -205,6 +278,9 @@ class VentanaDetalle(QWidget, Ui_Form):
             return
 
     def borrar_mp(self):
+        """ 
+            Borra una materia prima
+        """
 
         ventana_confirmacion = VentanaEmergenteBorrar()
         respuesta = ventana_confirmacion.exec()
@@ -227,17 +303,37 @@ class VentanaDetalle(QWidget, Ui_Form):
                 query_actualizar.exec()
 
             self.ventana_mp.initial_query.exec(
-                "SELECT id_mps,nombre_mps FROM materias_primas where activo_mps=true order by id_mps asc")
+                """
+                        select
+                            mp.id_mps,
+                            mp.nombre_mps,
+                            COALESCE(sum(ls.cantidad_lotes_stock),0)
+                        from
+                            materias_primas mp
+                        left join lotes_stock ls on
+                            mp.id_mps =ls.mp_id_lotes_stock
+                        where mp.activo_mps =true
+                        group by mp.id_mps,mp.nombre_mps
+                        order by mp.id_mps
+                    """)
             self.ventana_mp.model.setQuery(self.ventana_mp.initial_query)
             self.ventana_mp.tv_mat_primas.selectRow(0)
             self.close()
 
     def closeEvent(self, event):
-        # Cuando se cierra la ventana secundaria, se muestra la ventana principal
+        """
+        Maneja el evento del cierre de la ventana.
+        Cuando se cierra la ventana secundaria, se muestra la ventana padre
+        Args:
+            event (QCloseEvent): 
+        """
         self.ventana_mp.show()
         event.accept()
 
     def actualizar_det(self):
+        """
+        Actualiza los datos de la materia prima seleccionada en la ventana
+        """
         codigo = int(
             self.le_codigo_det.text())  # Lo paso a entero para que coincida con el tipo de datos de la bd
         nombre = self.le_nombre_det.text()
@@ -253,12 +349,33 @@ class VentanaDetalle(QWidget, Ui_Form):
         query.exec()
 
         self.ventana_mp.initial_query.exec(
-            "SELECT id_mps,nombre_mps FROM materias_primas where activo_mps=true order by id_mps  asc")
+            """
+                        select
+                            mp.id_mps,
+                            mp.nombre_mps,
+                            COALESCE(sum(ls.cantidad_lotes_stock),0)
+                        from
+                            materias_primas mp
+                        left join lotes_stock ls on
+                            mp.id_mps =ls.mp_id_lotes_stock
+                        where mp.activo_mps =true
+                        group by mp.id_mps,mp.nombre_mps
+                        order by mp.id_mps
+                    """)
         self.ventana_mp.model.setQuery(self.ventana_mp.initial_query)
         self.ventana_mp.tv_mat_primas.selectRow(0)
         self.close()
 
     def obtener_cantidad_mp(self, codigo_mp):
+        """
+        Obtiene la clave principal
+
+        Args:
+            codigo_mp (int): Recibe el código de la materia prima seleccionada.
+
+        Returns:
+            int: Devuelve la cantidad de materia prima
+        """
 
         query_cantidad_mp = QSqlQuery()
         query_cantidad_mp.prepare(
@@ -281,6 +398,9 @@ class VentanaDetalle(QWidget, Ui_Form):
                 return cantidad_mp
 
     def lanzar_ventana_mod_entrada(self):
+        """
+        Muestra una ventana en la que se puede modificar la cantidad de la entrada realizada.
+        """
         try:
             selected_index = self.tv_entradas_mp_det.selectedIndexes()
             if selected_index:
