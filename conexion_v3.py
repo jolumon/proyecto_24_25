@@ -12,8 +12,7 @@ class Conexion:
         self.db.setUserName('postgres')
         self.db.setPassword('postgres')
        
-    # DATABASE_URL=postgres://[user]:[password]@[neon_hostname]/[dbname]?sslmode=require
-    # postgresql://postgres:7taYLsi4hFrE@ep-wandering-sound-a2wgvsk5.eu-central-1.aws.neon.tech/labERP_dam?sslmode=require
+   
     def conectar(self):
         if self.db.open()==True:
             print('Base de datos abierta correctamente')
